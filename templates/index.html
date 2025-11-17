@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GCP Machine Type Performance Analyzer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>GCP Machine Type Performance Analyzer</h1>
+            <p class="subtitle">Explore and compare Google Cloud Platform machine types and their maximum performance capabilities</p>
+        </header>
+
+        <main>
+            <div class="selector-section">
+                <div class="selector-group">
+                    <label for="familySelect">Machine Family</label>
+                    <select id="familySelect" class="dropdown">
+                        <option value="">Select a machine family...</option>
+                    </select>
+                    <p id="familyDescription" class="description"></p>
+                </div>
+
+                <div class="selector-group">
+                    <label for="machineSelect">Machine Type</label>
+                    <select id="machineSelect" class="dropdown" disabled>
+                        <option value="">First select a machine family</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="resultsSection" class="results-section" style="display: none;">
+                <div class="results-header">
+                    <h2 id="machineTitle"></h2>
+                    <button id="explainBtn" class="explain-btn">Explain Use Cases (AI)</button>
+                </div>
+
+                <div id="aiExplanation" class="ai-explanation" style="display: none;">
+                    <h3>AI-Powered Explanation</h3>
+                    <p id="explanationText"></p>
+                </div>
+
+                <div class="performance-grid">
+                    <div class="metric-card">
+                        <div class="metric-icon">🖥️</div>
+                        <div class="metric-info">
+                            <h3>Compute</h3>
+                            <div class="metric-value" id="vcpu">-</div>
+                            <div class="metric-label">vCPUs</div>
+                            <div class="metric-detail" id="cpuPlatform">-</div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-icon">💾</div>
+                        <div class="metric-info">
+                            <h3>Memory</h3>
+                            <div class="metric-value" id="memory">-</div>
+                            <div class="metric-label">GB RAM</div>
+                            <div class="metric-detail" id="memoryBandwidth">-</div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-icon">💿</div>
+                        <div class="metric-info">
+                            <h3>Disk IOPS</h3>
+                            <div class="metric-value" id="diskIops">-</div>
+                            <div class="metric-label">Max IOPS (R/W)</div>
+                            <div class="metric-detail" id="diskThroughput">-</div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-icon">🌐</div>
+                        <div class="metric-info">
+                            <h3>Network</h3>
+                            <div class="metric-value" id="network">-</div>
+                            <div class="metric-label">Gbps Bandwidth</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="specs-table">
+                    <h3>Detailed Specifications</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Metric</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                        <tbody id="specsTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="loadingIndicator" class="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Loading...</p>
+            </div>
+        </main>
+
+        <footer>
+            <p>Data based on GCP official documentation. Performance values represent maximum theoretical limits.</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
