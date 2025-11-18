@@ -13,8 +13,26 @@ function setupEventListeners() {
     const machineSelect = document.getElementById('machineSelect');
     const diskTypeSelect = document.getElementById('diskTypeSelect');
     const diskSizeInput = document.getElementById('diskSizeInput');
+    const diskSizeSlider = document.getElementById('diskSizeSlider');
+    const diskSizeDisplay = document.getElementById('diskSizeDisplay');
     const calculateBtn = document.getElementById('calculateBtn');
     const analyzeBtn = document.getElementById('analyzeBtn');
+
+    // Sync slider and input
+    diskSizeSlider.addEventListener('input', (e) => {
+        diskSizeInput.value = e.target.value;
+        diskSizeDisplay.textContent = e.target.value;
+        checkInputs();
+    });
+
+    diskSizeInput.addEventListener('input', (e) => {
+        const value = Math.min(Math.max(e.target.value, 1), 10000);
+        if (value <= 10000) {
+            diskSizeSlider.value = value;
+        }
+        diskSizeDisplay.textContent = e.target.value || '500';
+        checkInputs();
+    });
 
     // Enable calculate button when all inputs are filled
     const checkInputs = () => {
@@ -24,7 +42,6 @@ function setupEventListeners() {
 
     machineSelect.addEventListener('change', checkInputs);
     diskTypeSelect.addEventListener('change', checkInputs);
-    diskSizeInput.addEventListener('input', checkInputs);
 
     calculateBtn.addEventListener('click', calculatePerformance);
     analyzeBtn.addEventListener('click', getAIAnalysis);
@@ -36,15 +53,37 @@ async function loadMachines() {
         const response = await fetch('/api/all-machines');
         const machines = await response.json();
 
+        // Group machines by family
+        const groupedMachines = {};
+        machines.forEach(machine => {
+            if (!groupedMachines[machine.family]) {
+                groupedMachines[machine.family] = {
+                    description: machine.family_description,
+                    machines: []
+                };
+            }
+            groupedMachines[machine.family].machines.push(machine);
+        });
+
         const machineSelect = document.getElementById('machineSelect');
         machineSelect.innerHTML = '<option value="">Select machine type...</option>';
 
-        machines.forEach(machine => {
-            const option = document.createElement('option');
-            option.value = machine.machine_type;
-            option.textContent = `${machine.machine_type} (${machine.family}) - ${machine.vcpu} vCPU, ${machine.memory_gb} GB`;
-            option.dataset.family = machine.family;
-            machineSelect.appendChild(option);
+        // Sort families: E2, N1, N2, N2D, C2, C2D, C3, M1, M2, M3
+        const familyOrder = ['E2', 'N1', 'N2', 'N2D', 'C2', 'C2D', 'C3', 'M1', 'M2', 'M3'];
+        familyOrder.forEach(family => {
+            if (groupedMachines[family]) {
+                const optgroup = document.createElement('optgroup');
+                optgroup.label = `${family} - ${groupedMachines[family].description}`;
+
+                groupedMachines[family].machines.forEach(machine => {
+                    const option = document.createElement('option');
+                    option.value = machine.machine_type;
+                    option.textContent = `${machine.machine_type} (${machine.vcpu} vCPU, ${machine.memory_gb} GB)`;
+                    optgroup.appendChild(option);
+                });
+
+                machineSelect.appendChild(optgroup);
+            }
         });
     } catch (error) {
         showError('Failed to load machine types');
