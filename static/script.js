@@ -1,206 +1,262 @@
-// DOM Elements
-const familySelect = document.getElementById('familySelect');
-const machineSelect = document.getElementById('machineSelect');
-const familyDescription = document.getElementById('familyDescription');
-const resultsSection = document.getElementById('resultsSection');
-const loadingIndicator = document.getElementById('loadingIndicator');
-const explainBtn = document.getElementById('explainBtn');
-const aiExplanation = document.getElementById('aiExplanation');
-const explanationText = document.getElementById('explanationText');
+// Global state
+let currentCalculation = null;
 
-// State
-let currentFamily = '';
-let currentMachine = '';
-
-// Initialize the app
-async function init() {
-    await loadFamilies();
+// Initialize the application
+document.addEventListener('DOMContentLoaded', () => {
+    loadMachines();
+    loadDiskTypes();
     setupEventListeners();
-}
-
-// Load machine families
-async function loadFamilies() {
-    try {
-        const response = await fetch('/api/families');
-        const families = await response.json();
-
-        familySelect.innerHTML = '<option value="">Select a machine family...</option>';
-
-        Object.entries(families).forEach(([key, family]) => {
-            const option = document.createElement('option');
-            option.value = key;
-            option.textContent = `${family.name} - ${family.description}`;
-            option.dataset.description = family.description;
-            familySelect.appendChild(option);
-        });
-    } catch (error) {
-        console.error('Error loading families:', error);
-        alert('Failed to load machine families. Please refresh the page.');
-    }
-}
-
-// Load machines for a specific family
-async function loadMachines(family) {
-    try {
-        machineSelect.disabled = true;
-        machineSelect.innerHTML = '<option value="">Loading...</option>';
-
-        const response = await fetch(`/api/machines/${family}`);
-        const machines = await response.json();
-
-        machineSelect.innerHTML = '<option value="">Select a machine type...</option>';
-
-        Object.keys(machines).sort().forEach(machineType => {
-            const option = document.createElement('option');
-            option.value = machineType;
-            option.textContent = machineType;
-            machineSelect.appendChild(option);
-        });
-
-        machineSelect.disabled = false;
-    } catch (error) {
-        console.error('Error loading machines:', error);
-        machineSelect.innerHTML = '<option value="">Error loading machines</option>';
-    }
-}
-
-// Load machine details
-async function loadMachineDetails(family, machineType) {
-    try {
-        showLoading(true);
-        resultsSection.style.display = 'none';
-        aiExplanation.style.display = 'none';
-
-        const response = await fetch(`/api/machine/${family}/${machineType}`);
-        const data = await response.json();
-
-        displayMachineDetails(data);
-        showLoading(false);
-        resultsSection.style.display = 'block';
-    } catch (error) {
-        console.error('Error loading machine details:', error);
-        showLoading(false);
-        alert('Failed to load machine details.');
-    }
-}
-
-// Display machine details
-function displayMachineDetails(data) {
-    const { family, type, specs } = data;
-
-    // Update title
-    document.getElementById('machineTitle').textContent = `${type} (${family} Family)`;
-
-    // Update metric cards
-    document.getElementById('vcpu').textContent = specs.vcpu;
-    document.getElementById('cpuPlatform').textContent = specs.cpu_platform;
-
-    document.getElementById('memory').textContent = specs.memory_gb;
-    document.getElementById('memoryBandwidth').textContent = `${specs.memory_bandwidth_gbps} Gbps bandwidth`;
-
-    document.getElementById('diskIops').textContent = `${specs.max_disk_iops_read.toLocaleString()}`;
-    document.getElementById('diskThroughput').textContent =
-        `Read: ${specs.max_disk_throughput_read_mbps} MB/s | Write: ${specs.max_disk_throughput_write_mbps} MB/s`;
-
-    document.getElementById('network').textContent = specs.network_bandwidth_gbps;
-
-    // Update detailed specs table
-    const tableBody = document.getElementById('specsTableBody');
-    tableBody.innerHTML = '';
-
-    const specsToDisplay = [
-        { label: 'vCPUs', value: specs.vcpu },
-        { label: 'Memory (GB)', value: specs.memory_gb },
-        { label: 'Memory Bandwidth (Gbps)', value: specs.memory_bandwidth_gbps },
-        { label: 'Max Disk Read IOPS', value: specs.max_disk_iops_read.toLocaleString() },
-        { label: 'Max Disk Write IOPS', value: specs.max_disk_iops_write.toLocaleString() },
-        { label: 'Max Disk Read Throughput (MB/s)', value: specs.max_disk_throughput_read_mbps },
-        { label: 'Max Disk Write Throughput (MB/s)', value: specs.max_disk_throughput_write_mbps },
-        { label: 'Network Bandwidth (Gbps)', value: specs.network_bandwidth_gbps },
-        { label: 'CPU Platform', value: specs.cpu_platform }
-    ];
-
-    specsToDisplay.forEach(spec => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td><strong>${spec.label}</strong></td>
-            <td>${spec.value}</td>
-        `;
-        tableBody.appendChild(row);
-    });
-
-    // Store current selection
-    currentFamily = family;
-    currentMachine = type;
-}
-
-// Load AI explanation
-async function loadExplanation() {
-    try {
-        explainBtn.disabled = true;
-        explainBtn.textContent = 'Loading...';
-        aiExplanation.style.display = 'none';
-
-        const response = await fetch(`/api/explain/${currentFamily}/${currentMachine}`);
-        const data = await response.json();
-
-        if (data.error) {
-            alert(data.error);
-        } else {
-            explanationText.textContent = data.explanation;
-            aiExplanation.style.display = 'block';
-        }
-    } catch (error) {
-        console.error('Error loading explanation:', error);
-        alert('Failed to load AI explanation. Make sure Gemini API is configured.');
-    } finally {
-        explainBtn.disabled = false;
-        explainBtn.textContent = 'Explain Use Cases (AI)';
-    }
-}
-
-// Show/hide loading indicator
-function showLoading(show) {
-    loadingIndicator.style.display = show ? 'block' : 'none';
-}
+});
 
 // Setup event listeners
 function setupEventListeners() {
-    familySelect.addEventListener('change', (e) => {
-        const selectedFamily = e.target.value;
+    const machineSelect = document.getElementById('machineSelect');
+    const diskTypeSelect = document.getElementById('diskTypeSelect');
+    const diskSizeInput = document.getElementById('diskSizeInput');
+    const calculateBtn = document.getElementById('calculateBtn');
+    const analyzeBtn = document.getElementById('analyzeBtn');
 
-        if (selectedFamily) {
-            const selectedOption = e.target.options[e.target.selectedIndex];
-            familyDescription.textContent = selectedOption.dataset.description;
-            loadMachines(selectedFamily);
-        } else {
-            familyDescription.textContent = '';
-            machineSelect.innerHTML = '<option value="">First select a machine family</option>';
-            machineSelect.disabled = true;
-            resultsSection.style.display = 'none';
-        }
+    // Enable calculate button when all inputs are filled
+    const checkInputs = () => {
+        const isValid = machineSelect.value && diskTypeSelect.value && diskSizeInput.value && diskSizeInput.value > 0;
+        calculateBtn.disabled = !isValid;
+    };
 
-        // Reset machine selection
-        resultsSection.style.display = 'none';
-        aiExplanation.style.display = 'none';
-    });
+    machineSelect.addEventListener('change', checkInputs);
+    diskTypeSelect.addEventListener('change', checkInputs);
+    diskSizeInput.addEventListener('input', checkInputs);
 
-    machineSelect.addEventListener('change', (e) => {
-        const selectedMachine = e.target.value;
-
-        if (selectedMachine && familySelect.value) {
-            loadMachineDetails(familySelect.value, selectedMachine);
-        } else {
-            resultsSection.style.display = 'none';
-        }
-    });
-
-    explainBtn.addEventListener('click', loadExplanation);
+    calculateBtn.addEventListener('click', calculatePerformance);
+    analyzeBtn.addEventListener('click', getAIAnalysis);
 }
 
-// Initialize when DOM is ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-} else {
-    init();
+// Load all machines
+async function loadMachines() {
+    try {
+        const response = await fetch('/api/all-machines');
+        const machines = await response.json();
+
+        const machineSelect = document.getElementById('machineSelect');
+        machineSelect.innerHTML = '<option value="">Select machine type...</option>';
+
+        machines.forEach(machine => {
+            const option = document.createElement('option');
+            option.value = machine.machine_type;
+            option.textContent = `${machine.machine_type} (${machine.family}) - ${machine.vcpu} vCPU, ${machine.memory_gb} GB`;
+            option.dataset.family = machine.family;
+            machineSelect.appendChild(option);
+        });
+    } catch (error) {
+        showError('Failed to load machine types');
+        console.error(error);
+    }
+}
+
+// Load disk types
+async function loadDiskTypes() {
+    try {
+        const response = await fetch('/api/disk-types');
+        const diskTypes = await response.json();
+
+        const diskTypeSelect = document.getElementById('diskTypeSelect');
+        diskTypeSelect.innerHTML = '<option value="">Select disk type...</option>';
+
+        diskTypes.forEach(disk => {
+            const option = document.createElement('option');
+            option.value = disk.disk_type;
+            option.textContent = `${disk.name} (${disk.type})`;
+            option.title = disk.description;
+            diskTypeSelect.appendChild(option);
+        });
+    } catch (error) {
+        showError('Failed to load disk types');
+        console.error(error);
+    }
+}
+
+// Calculate performance
+async function calculatePerformance() {
+    const machineType = document.getElementById('machineSelect').value;
+    const diskType = document.getElementById('diskTypeSelect').value;
+    const diskSizeGb = parseInt(document.getElementById('diskSizeInput').value);
+
+    showLoading(true);
+    hideError();
+    document.getElementById('resultsSection').style.display = 'none';
+
+    try {
+        const response = await fetch('/api/calculate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                machine_type: machineType,
+                disk_type: diskType,
+                disk_size_gb: diskSizeGb
+            })
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Calculation failed');
+        }
+
+        const result = await response.json();
+        currentCalculation = result;
+        displayResults(result);
+    } catch (error) {
+        showError(error.message);
+        console.error(error);
+    } finally {
+        showLoading(false);
+    }
+}
+
+// Display calculation results
+function displayResults(result) {
+    // Show results section
+    document.getElementById('resultsSection').style.display = 'block';
+
+    // Update config summary
+    document.getElementById('configSummary').textContent =
+        `${result.machine_type} + ${result.disk_type.toUpperCase()} ${result.disk_size_gb}GB`;
+
+    // Update bottleneck alert
+    document.getElementById('bottleneckText').textContent = result.bottleneck;
+
+    // Update comparison table
+    updateComparisonTable(result);
+
+    // Update machine specs
+    document.getElementById('machineFamily').textContent = result.family;
+    document.getElementById('machineVcpu').textContent = result.machine_limits.vcpu;
+    document.getElementById('machineMemory').textContent = `${result.machine_limits.memory_gb} GB`;
+    document.getElementById('machineNetwork').textContent = `${result.machine_limits.network_bandwidth_gbps} Gbps`;
+
+    // Reset AI analysis
+    document.getElementById('aiAnalysis').style.display = 'none';
+
+    // Scroll to results
+    document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Update comparison table
+function updateComparisonTable(result) {
+    const tbody = document.getElementById('comparisonTableBody');
+    tbody.innerHTML = '';
+
+    const metrics = [
+        {
+            label: 'IOPS (Read)',
+            machine: result.machine_limits.iops_read,
+            disk: result.disk_performance.iops_read,
+            effective: result.effective_performance.iops_read
+        },
+        {
+            label: 'IOPS (Write)',
+            machine: result.machine_limits.iops_write,
+            disk: result.disk_performance.iops_write,
+            effective: result.effective_performance.iops_write
+        },
+        {
+            label: 'Throughput Read (MB/s)',
+            machine: result.machine_limits.throughput_read_mbps,
+            disk: result.disk_performance.throughput_read_mbps,
+            effective: result.effective_performance.throughput_read_mbps
+        },
+        {
+            label: 'Throughput Write (MB/s)',
+            machine: result.machine_limits.throughput_write_mbps,
+            disk: result.disk_performance.throughput_write_mbps,
+            effective: result.effective_performance.throughput_write_mbps
+        }
+    ];
+
+    metrics.forEach(metric => {
+        const row = document.createElement('tr');
+
+        const isBottleneck = metric.effective < metric.machine;
+        const bottleneckIndicator = isBottleneck ? '🔴 Disk' : '✅ Machine';
+
+        row.innerHTML = `
+            <td>${metric.label}</td>
+            <td>${formatNumber(metric.machine)}</td>
+            <td class="${isBottleneck ? 'bottleneck-value' : ''}">${formatNumber(metric.disk)}</td>
+            <td><strong>${formatNumber(metric.effective)}</strong></td>
+            <td>${bottleneckIndicator}</td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+// Get AI analysis
+async function getAIAnalysis() {
+    if (!currentCalculation) return;
+
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    analyzeBtn.disabled = true;
+    analyzeBtn.textContent = 'Analyzing...';
+
+    try {
+        const response = await fetch('/api/analyze', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                machine_type: currentCalculation.machine_type,
+                disk_type: currentCalculation.disk_type,
+                disk_size_gb: currentCalculation.disk_size_gb,
+                bottleneck: currentCalculation.bottleneck,
+                effective_performance: currentCalculation.effective_performance,
+                machine_limits: currentCalculation.machine_limits
+            })
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'AI analysis failed');
+        }
+
+        const result = await response.json();
+        displayAIAnalysis(result.analysis);
+    } catch (error) {
+        showError('AI analysis failed: ' + error.message);
+        console.error(error);
+    } finally {
+        analyzeBtn.disabled = false;
+        analyzeBtn.textContent = 'Get AI Recommendations';
+    }
+}
+
+// Display AI analysis
+function displayAIAnalysis(analysis) {
+    const aiAnalysis = document.getElementById('aiAnalysis');
+    const analysisText = document.getElementById('analysisText');
+
+    analysisText.innerHTML = analysis.replace(/\n/g, '<br>');
+    aiAnalysis.style.display = 'block';
+
+    aiAnalysis.scrollIntoView({ behavior: 'smooth' });
+}
+
+// Utility functions
+function showLoading(show) {
+    document.getElementById('loadingIndicator').style.display = show ? 'flex' : 'none';
+}
+
+function showError(message) {
+    const errorDiv = document.getElementById('errorMessage');
+    document.getElementById('errorText').textContent = message;
+    errorDiv.style.display = 'flex';
+}
+
+function hideError() {
+    document.getElementById('errorMessage').style.display = 'none';
+}
+
+function formatNumber(value) {
+    if (value === undefined || value === null) return '-';
+    return value.toLocaleString();
 }

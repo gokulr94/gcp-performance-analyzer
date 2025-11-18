@@ -26,3 +26,6 @@ Thumbs.db
 
 # Logs
 *.log
+
+# AI reference files (local only, not for public repo)
+CLAUDE.md

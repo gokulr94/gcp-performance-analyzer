@@ -1,0 +1,145 @@
+{
+  "pd-standard": {
+    "name": "Standard Persistent Disk",
+    "type": "HDD",
+    "description": "Standard persistent disk backed by standard hard disk drives (HDD)",
+    "iops_per_gb": {
+      "read": 0.75,
+      "write": 1.5
+    },
+    "iops_max": {
+      "read": 7500,
+      "write": 15000
+    },
+    "throughput_per_gb": {
+      "read": 0.12,
+      "write": 0.12
+    },
+    "throughput_max": {
+      "read": 1200,
+      "write": 400
+    },
+    "min_size_gb": 10,
+    "max_size_gb": 64000
+  },
+  "pd-balanced": {
+    "name": "Balanced Persistent Disk",
+    "type": "SSD",
+    "description": "Cost-effective and reliable block storage with balanced performance",
+    "iops_per_gb": {
+      "read": 6,
+      "write": 6
+    },
+    "iops_max": {
+      "read": 80000,
+      "write": 80000
+    },
+    "throughput_per_gb": {
+      "read": 0.28,
+      "write": 0.28
+    },
+    "throughput_max": {
+      "read": 1200,
+      "write": 1200
+    },
+    "min_size_gb": 10,
+    "max_size_gb": 64000
+  },
+  "pd-ssd": {
+    "name": "SSD Persistent Disk",
+    "type": "SSD",
+    "description": "Fast and reliable block storage with high IOPS and low latency",
+    "iops_per_gb": {
+      "read": 30,
+      "write": 30
+    },
+    "iops_max": {
+      "read": 100000,
+      "write": 100000
+    },
+    "throughput_per_gb": {
+      "read": 0.48,
+      "write": 0.48
+    },
+    "throughput_max": {
+      "read": 1200,
+      "write": 1200
+    },
+    "min_size_gb": 10,
+    "max_size_gb": 64000
+  },
+  "pd-extreme": {
+    "name": "Extreme Persistent Disk",
+    "type": "SSD",
+    "description": "Highest performance persistent disk with provisioned IOPS",
+    "iops_per_gb": {
+      "read": 500,
+      "write": 500
+    },
+    "iops_max": {
+      "read": 120000,
+      "write": 120000
+    },
+    "throughput_per_gb": {
+      "read": 1.25,
+      "write": 1.25
+    },
+    "throughput_max": {
+      "read": 4800,
+      "write": 4800
+    },
+    "min_size_gb": 500,
+    "max_size_gb": 64000,
+    "note": "Requires provisioned IOPS configuration"
+  },
+  "local-ssd": {
+    "name": "Local SSD",
+    "type": "Local SSD",
+    "description": "High-performance local block storage (ephemeral)",
+    "iops_fixed": {
+      "read": 375000,
+      "write": 360000
+    },
+    "throughput_fixed": {
+      "read": 1700,
+      "write": 1400
+    },
+    "size_per_device_gb": 375,
+    "note": "Performance is per 375 GB device. Data is ephemeral and lost on VM stop."
+  },
+  "hyperdisk-balanced": {
+    "name": "Hyperdisk Balanced",
+    "type": "Hyperdisk",
+    "description": "Next-generation block storage with flexible performance",
+    "iops_min": 3000,
+    "iops_max": 100000,
+    "throughput_min": 140,
+    "throughput_max": 1200,
+    "min_size_gb": 4,
+    "max_size_gb": 64000,
+    "note": "Provisioned IOPS and throughput"
+  },
+  "hyperdisk-extreme": {
+    "name": "Hyperdisk Extreme",
+    "type": "Hyperdisk",
+    "description": "Highest performance next-generation block storage",
+    "iops_min": 10000,
+    "iops_max": 350000,
+    "throughput_min": 300,
+    "throughput_max": 4800,
+    "min_size_gb": 64,
+    "max_size_gb": 64000,
+    "note": "Provisioned IOPS and throughput"
+  },
+  "hyperdisk-throughput": {
+    "name": "Hyperdisk Throughput",
+    "type": "Hyperdisk",
+    "description": "Optimized for high-throughput sequential workloads",
+    "iops_fixed": 25000,
+    "throughput_min": 150,
+    "throughput_max": 4800,
+    "min_size_gb": 2000,
+    "max_size_gb": 64000,
+    "note": "Fixed IOPS, provisioned throughput"
+  }
+}

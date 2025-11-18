@@ -3,109 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GCP Machine Type Performance Analyzer</title>
+    <title>GCP Performance Calculator for Support Engineers</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>GCP Machine Type Performance Analyzer</h1>
-            <p class="subtitle">Explore and compare Google Cloud Platform machine types and their maximum performance capabilities</p>
+            <h1>GCP Performance Bottleneck Calculator</h1>
+            <p class="subtitle">Calculate actual performance limits based on machine type, disk type, and disk size</p>
+            <p class="use-case">For GCP Support Engineers troubleshooting customer performance issues</p>
         </header>
 
         <main>
-            <div class="selector-section">
-                <div class="selector-group">
-                    <label for="familySelect">Machine Family</label>
-                    <select id="familySelect" class="dropdown">
-                        <option value="">Select a machine family...</option>
-                    </select>
-                    <p id="familyDescription" class="description"></p>
+            <div class="calculator-section">
+                <h2>Configuration Input</h2>
+                <div class="input-grid">
+                    <div class="input-group">
+                        <label for="machineSelect">Machine Type</label>
+                        <select id="machineSelect" class="dropdown">
+                            <option value="">Loading machines...</option>
+                        </select>
+                        <p class="input-hint">Select customer's VM machine type</p>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="diskTypeSelect">Disk Type</label>
+                        <select id="diskTypeSelect" class="dropdown">
+                            <option value="">Loading disk types...</option>
+                        </select>
+                        <p class="input-hint">Select persistent disk type attached to the VM</p>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="diskSizeInput">Disk Size (GB)</label>
+                        <input type="number" id="diskSizeInput" class="number-input" min="1" max="65000" placeholder="e.g., 500">
+                        <p class="input-hint">Enter disk size in gigabytes</p>
+                    </div>
                 </div>
 
-                <div class="selector-group">
-                    <label for="machineSelect">Machine Type</label>
-                    <select id="machineSelect" class="dropdown" disabled>
-                        <option value="">First select a machine family</option>
-                    </select>
-                </div>
+                <button id="calculateBtn" class="calculate-btn" disabled>Calculate Performance</button>
             </div>
 
             <div id="resultsSection" class="results-section" style="display: none;">
                 <div class="results-header">
-                    <h2 id="machineTitle"></h2>
-                    <button id="explainBtn" class="explain-btn">Explain Use Cases (AI)</button>
+                    <h2>Performance Analysis</h2>
+                    <div class="config-summary" id="configSummary"></div>
                 </div>
 
-                <div id="aiExplanation" class="ai-explanation" style="display: none;">
-                    <h3>AI-Powered Explanation</h3>
-                    <p id="explanationText"></p>
-                </div>
-
-                <div class="performance-grid">
-                    <div class="metric-card">
-                        <div class="metric-icon">🖥️</div>
-                        <div class="metric-info">
-                            <h3>Compute</h3>
-                            <div class="metric-value" id="vcpu">-</div>
-                            <div class="metric-label">vCPUs</div>
-                            <div class="metric-detail" id="cpuPlatform">-</div>
-                        </div>
-                    </div>
-
-                    <div class="metric-card">
-                        <div class="metric-icon">💾</div>
-                        <div class="metric-info">
-                            <h3>Memory</h3>
-                            <div class="metric-value" id="memory">-</div>
-                            <div class="metric-label">GB RAM</div>
-                            <div class="metric-detail" id="memoryBandwidth">-</div>
-                        </div>
-                    </div>
-
-                    <div class="metric-card">
-                        <div class="metric-icon">💿</div>
-                        <div class="metric-info">
-                            <h3>Disk IOPS</h3>
-                            <div class="metric-value" id="diskIops">-</div>
-                            <div class="metric-label">Max IOPS (R/W)</div>
-                            <div class="metric-detail" id="diskThroughput">-</div>
-                        </div>
-                    </div>
-
-                    <div class="metric-card">
-                        <div class="metric-icon">🌐</div>
-                        <div class="metric-info">
-                            <h3>Network</h3>
-                            <div class="metric-value" id="network">-</div>
-                            <div class="metric-label">Gbps Bandwidth</div>
-                        </div>
+                <!-- Bottleneck Alert -->
+                <div id="bottleneckAlert" class="bottleneck-alert">
+                    <div class="alert-icon">⚠️</div>
+                    <div class="alert-content">
+                        <h3>Bottleneck Identified</h3>
+                        <p id="bottleneckText"></p>
                     </div>
                 </div>
 
-                <div class="specs-table">
-                    <h3>Detailed Specifications</h3>
-                    <table>
+                <!-- Performance Comparison Table -->
+                <div class="comparison-section">
+                    <h3>Performance Limits Comparison</h3>
+                    <table class="comparison-table">
                         <thead>
                             <tr>
                                 <th>Metric</th>
-                                <th>Value</th>
+                                <th>Machine Type Limit</th>
+                                <th>Disk Performance</th>
+                                <th>Effective Performance</th>
+                                <th>Bottleneck</th>
                             </tr>
                         </thead>
-                        <tbody id="specsTableBody">
+                        <tbody id="comparisonTableBody">
                         </tbody>
                     </table>
+                </div>
+
+                <!-- Machine Specs -->
+                <div class="specs-section">
+                    <h3>Machine Type Specifications</h3>
+                    <div class="spec-grid">
+                        <div class="spec-item">
+                            <span class="spec-label">Family:</span>
+                            <span class="spec-value" id="machineFamily">-</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">vCPUs:</span>
+                            <span class="spec-value" id="machineVcpu">-</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Memory:</span>
+                            <span class="spec-value" id="machineMemory">-</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Network Bandwidth:</span>
+                            <span class="spec-value" id="machineNetwork">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Analysis -->
+                <div class="ai-section">
+                    <button id="analyzeBtn" class="ai-btn">Get AI Recommendations</button>
+                    <div id="aiAnalysis" class="ai-analysis" style="display: none;">
+                        <h3>AI-Powered Analysis & Recommendations</h3>
+                        <div id="analysisText" class="analysis-content"></div>
+                    </div>
                 </div>
             </div>
 
             <div id="loadingIndicator" class="loading" style="display: none;">
                 <div class="spinner"></div>
-                <p>Loading...</p>
+                <p>Calculating...</p>
+            </div>
+
+            <div id="errorMessage" class="error-message" style="display: none;">
+                <div class="error-icon">❌</div>
+                <p id="errorText"></p>
             </div>
         </main>
 
         <footer>
-            <p>Data based on GCP official documentation. Performance values represent maximum theoretical limits.</p>
+            <p>Performance Calculator for GCP Support Engineers | Data based on official GCP documentation</p>
         </footer>
     </div>
 
