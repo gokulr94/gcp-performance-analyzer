@@ -3,654 +3,186 @@
     "description": "Cost-optimized VMs with day-to-day computing at a lower cost",
     "machines": {
       "e2-micro": {
-        "vcpu": 2,
+        "vcpu": 0.25,
         "memory_gb": 1,
-        "memory_bandwidth_gbps": 4,
-        "max_disk_iops_read": 3000,
-        "max_disk_iops_write": 3000,
-        "max_disk_throughput_read_mbps": 240,
-        "max_disk_throughput_write_mbps": 240,
         "network_bandwidth_gbps": 1,
-        "cpu_platform": "Intel or AMD EPYC"
+        "cpu_platform": "Intel or AMD EPYC",
+        "disk_limits": {
+          "pd-standard": {
+            "max_disk_iops_read": 1000,
+            "max_disk_iops_write": 10000,
+            "max_disk_throughput_read_mbps": 200,
+            "max_disk_throughput_write_mbps": 200
+          },
+          "pd-balanced": {
+            "max_disk_iops_read": 12000,
+            "max_disk_iops_write": 10000,
+            "max_disk_throughput_read_mbps": 200,
+            "max_disk_throughput_write_mbps": 200
+          },
+          "pd-ssd": {
+            "max_disk_iops_read": 12000,
+            "max_disk_iops_write": 10000,
+            "max_disk_throughput_read_mbps": 200,
+            "max_disk_throughput_write_mbps": 200
+          }
+        }
       },
       "e2-small": {
-        "vcpu": 2,
+        "vcpu": 0.5,
         "memory_gb": 2,
-        "memory_bandwidth_gbps": 4,
-        "max_disk_iops_read": 3000,
-        "max_disk_iops_write": 3000,
-        "max_disk_throughput_read_mbps": 240,
-        "max_disk_throughput_write_mbps": 240,
         "network_bandwidth_gbps": 1,
-        "cpu_platform": "Intel or AMD EPYC"
+        "cpu_platform": "Intel or AMD EPYC",
+        "disk_limits": {
+          "pd-standard": {
+            "max_disk_iops_read": 1000,
+            "max_disk_iops_write": 10000,
+            "max_disk_throughput_read_mbps": 200,
+            "max_disk_throughput_write_mbps": 200
+          },
+          "pd-balanced": {
+            "max_disk_iops_read": 12000,
+            "max_disk_iops_write": 10000,
+            "max_disk_throughput_read_mbps": 200,
+            "max_disk_throughput_write_mbps": 200
+          },
+          "pd-ssd": {
+            "max_disk_iops_read": 12000,
+            "max_disk_iops_write": 10000,
+            "max_disk_throughput_read_mbps": 200,
+            "max_disk_throughput_write_mbps": 200
+          }
+        }
       },
       "e2-medium": {
-        "vcpu": 2,
+        "vcpu": 1,
         "memory_gb": 4,
-        "memory_bandwidth_gbps": 8,
-        "max_disk_iops_read": 3000,
-        "max_disk_iops_write": 3000,
-        "max_disk_throughput_read_mbps": 240,
-        "max_disk_throughput_write_mbps": 240,
         "network_bandwidth_gbps": 2,
-        "cpu_platform": "Intel or AMD EPYC"
+        "cpu_platform": "Intel or AMD EPYC",
+        "disk_limits": {
+          "pd-standard": {
+            "max_disk_iops_read": 1000,
+            "max_disk_iops_write": 10000,
+            "max_disk_throughput_read_mbps": 200,
+            "max_disk_throughput_write_mbps": 200
+          },
+          "pd-balanced": {
+            "max_disk_iops_read": 12000,
+            "max_disk_iops_write": 10000,
+            "max_disk_throughput_read_mbps": 200,
+            "max_disk_throughput_write_mbps": 200
+          },
+          "pd-ssd": {
+            "max_disk_iops_read": 12000,
+            "max_disk_iops_write": 10000,
+            "max_disk_throughput_read_mbps": 200,
+            "max_disk_throughput_write_mbps": 200
+          }
+        }
       },
       "e2-standard-2": {
         "vcpu": 2,
         "memory_gb": 8,
-        "memory_bandwidth_gbps": 8,
-        "max_disk_iops_read": 15000,
-        "max_disk_iops_write": 15000,
-        "max_disk_throughput_read_mbps": 240,
-        "max_disk_throughput_write_mbps": 240,
         "network_bandwidth_gbps": 4,
-        "cpu_platform": "Intel or AMD EPYC"
+        "cpu_platform": "Intel or AMD EPYC",
+        "disk_limits": {
+          "pd-standard": {
+            "max_disk_iops_read": 3000,
+            "max_disk_iops_write": 15000,
+            "max_disk_throughput_read_mbps": 240,
+            "max_disk_throughput_write_mbps": 240
+          },
+          "pd-balanced": {
+            "max_disk_iops_read": 15000,
+            "max_disk_iops_write": 15000,
+            "max_disk_throughput_read_mbps": 240,
+            "max_disk_throughput_write_mbps": 240
+          },
+          "pd-ssd": {
+            "max_disk_iops_read": 15000,
+            "max_disk_iops_write": 15000,
+            "max_disk_throughput_read_mbps": 240,
+            "max_disk_throughput_write_mbps": 240
+          }
+        }
       },
       "e2-standard-4": {
         "vcpu": 4,
         "memory_gb": 16,
-        "memory_bandwidth_gbps": 16,
-        "max_disk_iops_read": 15000,
-        "max_disk_iops_write": 15000,
-        "max_disk_throughput_read_mbps": 480,
-        "max_disk_throughput_write_mbps": 480,
         "network_bandwidth_gbps": 8,
-        "cpu_platform": "Intel or AMD EPYC"
+        "cpu_platform": "Intel or AMD EPYC",
+        "disk_limits": {
+          "pd-standard": {
+            "max_disk_iops_read": 3000,
+            "max_disk_iops_write": 15000,
+            "max_disk_throughput_read_mbps": 240,
+            "max_disk_throughput_write_mbps": 240
+          },
+          "pd-balanced": {
+            "max_disk_iops_read": 15000,
+            "max_disk_iops_write": 15000,
+            "max_disk_throughput_read_mbps": 240,
+            "max_disk_throughput_write_mbps": 240
+          },
+          "pd-ssd": {
+            "max_disk_iops_read": 15000,
+            "max_disk_iops_write": 15000,
+            "max_disk_throughput_read_mbps": 240,
+            "max_disk_throughput_write_mbps": 240
+          }
+        }
       },
       "e2-standard-8": {
         "vcpu": 8,
         "memory_gb": 32,
-        "memory_bandwidth_gbps": 32,
-        "max_disk_iops_read": 15000,
-        "max_disk_iops_write": 15000,
-        "max_disk_throughput_read_mbps": 800,
-        "max_disk_throughput_write_mbps": 800,
         "network_bandwidth_gbps": 16,
-        "cpu_platform": "Intel or AMD EPYC"
+        "cpu_platform": "Intel or AMD EPYC",
+        "disk_limits": {
+          "pd-standard": {
+            "max_disk_iops_read": 5000,
+            "max_disk_iops_write": 15000,
+            "max_disk_throughput_read_mbps": 800,
+            "max_disk_throughput_write_mbps": 400
+          },
+          "pd-balanced": {
+            "max_disk_iops_read": 15000,
+            "max_disk_iops_write": 15000,
+            "max_disk_throughput_read_mbps": 800,
+            "max_disk_throughput_write_mbps": 800
+          },
+          "pd-ssd": {
+            "max_disk_iops_read": 15000,
+            "max_disk_iops_write": 15000,
+            "max_disk_throughput_read_mbps": 800,
+            "max_disk_throughput_write_mbps": 800
+          }
+        }
       },
       "e2-standard-16": {
         "vcpu": 16,
         "memory_gb": 64,
-        "memory_bandwidth_gbps": 64,
-        "max_disk_iops_read": 20000,
-        "max_disk_iops_write": 20000,
-        "max_disk_throughput_read_mbps": 1200,
-        "max_disk_throughput_write_mbps": 1200,
         "network_bandwidth_gbps": 16,
-        "cpu_platform": "Intel or AMD EPYC"
-      }
-    }
-  },
-  "N1": {
-    "description": "First-generation general-purpose VMs with balanced price/performance",
-    "machines": {
-      "n1-standard-1": {
-        "vcpu": 1,
-        "memory_gb": 3.75,
-        "memory_bandwidth_gbps": 5,
-        "max_disk_iops_read": 7500,
-        "max_disk_iops_write": 7500,
-        "max_disk_throughput_read_mbps": 240,
-        "max_disk_throughput_write_mbps": 240,
-        "network_bandwidth_gbps": 2,
-        "cpu_platform": "Intel Skylake or later"
-      },
-      "n1-standard-2": {
-        "vcpu": 2,
-        "memory_gb": 7.5,
-        "memory_bandwidth_gbps": 10,
-        "max_disk_iops_read": 15000,
-        "max_disk_iops_write": 15000,
-        "max_disk_throughput_read_mbps": 480,
-        "max_disk_throughput_write_mbps": 480,
-        "network_bandwidth_gbps": 10,
-        "cpu_platform": "Intel Skylake or later"
-      },
-      "n1-standard-4": {
-        "vcpu": 4,
-        "memory_gb": 15,
-        "memory_bandwidth_gbps": 20,
-        "max_disk_iops_read": 15000,
-        "max_disk_iops_write": 15000,
-        "max_disk_throughput_read_mbps": 800,
-        "max_disk_throughput_write_mbps": 800,
-        "network_bandwidth_gbps": 10,
-        "cpu_platform": "Intel Skylake or later"
-      },
-      "n1-standard-8": {
-        "vcpu": 8,
-        "memory_gb": 30,
-        "memory_bandwidth_gbps": 40,
-        "max_disk_iops_read": 15000,
-        "max_disk_iops_write": 15000,
-        "max_disk_throughput_read_mbps": 1200,
-        "max_disk_throughput_write_mbps": 1200,
-        "network_bandwidth_gbps": 16,
-        "cpu_platform": "Intel Skylake or later"
-      },
-      "n1-standard-16": {
-        "vcpu": 16,
-        "memory_gb": 60,
-        "memory_bandwidth_gbps": 80,
-        "max_disk_iops_read": 30000,
-        "max_disk_iops_write": 30000,
-        "max_disk_throughput_read_mbps": 1800,
-        "max_disk_throughput_write_mbps": 1800,
-        "network_bandwidth_gbps": 32,
-        "cpu_platform": "Intel Skylake or later"
-      },
-      "n1-highmem-2": {
-        "vcpu": 2,
-        "memory_gb": 13,
-        "memory_bandwidth_gbps": 10,
-        "max_disk_iops_read": 15000,
-        "max_disk_iops_write": 15000,
-        "max_disk_throughput_read_mbps": 480,
-        "max_disk_throughput_write_mbps": 480,
-        "network_bandwidth_gbps": 10,
-        "cpu_platform": "Intel Skylake or later"
-      },
-      "n1-highmem-4": {
-        "vcpu": 4,
-        "memory_gb": 26,
-        "memory_bandwidth_gbps": 20,
-        "max_disk_iops_read": 15000,
-        "max_disk_iops_write": 15000,
-        "max_disk_throughput_read_mbps": 800,
-        "max_disk_throughput_write_mbps": 800,
-        "network_bandwidth_gbps": 10,
-        "cpu_platform": "Intel Skylake or later"
-      },
-      "n1-highcpu-2": {
-        "vcpu": 2,
-        "memory_gb": 1.8,
-        "memory_bandwidth_gbps": 5,
-        "max_disk_iops_read": 15000,
-        "max_disk_iops_write": 15000,
-        "max_disk_throughput_read_mbps": 480,
-        "max_disk_throughput_write_mbps": 480,
-        "network_bandwidth_gbps": 10,
-        "cpu_platform": "Intel Skylake or later"
-      },
-      "n1-highcpu-4": {
-        "vcpu": 4,
-        "memory_gb": 3.6,
-        "memory_bandwidth_gbps": 10,
-        "max_disk_iops_read": 15000,
-        "max_disk_iops_write": 15000,
-        "max_disk_throughput_read_mbps": 800,
-        "max_disk_throughput_write_mbps": 800,
-        "network_bandwidth_gbps": 10,
-        "cpu_platform": "Intel Skylake or later"
-      }
-    }
-  },
-  "N2": {
-    "description": "Second-generation general-purpose VMs with higher performance",
-    "machines": {
-      "n2-standard-2": {
-        "vcpu": 2,
-        "memory_gb": 8,
-        "memory_bandwidth_gbps": 10,
-        "max_disk_iops_read": 15000,
-        "max_disk_iops_write": 15000,
-        "max_disk_throughput_read_mbps": 480,
-        "max_disk_throughput_write_mbps": 480,
-        "network_bandwidth_gbps": 10,
-        "cpu_platform": "Intel Cascade Lake"
-      },
-      "n2-standard-4": {
-        "vcpu": 4,
-        "memory_gb": 16,
-        "memory_bandwidth_gbps": 20,
-        "max_disk_iops_read": 15000,
-        "max_disk_iops_write": 15000,
-        "max_disk_throughput_read_mbps": 800,
-        "max_disk_throughput_write_mbps": 800,
-        "network_bandwidth_gbps": 10,
-        "cpu_platform": "Intel Cascade Lake"
-      },
-      "n2-standard-8": {
-        "vcpu": 8,
-        "memory_gb": 32,
-        "memory_bandwidth_gbps": 40,
-        "max_disk_iops_read": 15000,
-        "max_disk_iops_write": 15000,
-        "max_disk_throughput_read_mbps": 1200,
-        "max_disk_throughput_write_mbps": 1200,
-        "network_bandwidth_gbps": 16,
-        "cpu_platform": "Intel Cascade Lake"
-      },
-      "n2-standard-16": {
-        "vcpu": 16,
-        "memory_gb": 64,
-        "memory_bandwidth_gbps": 80,
-        "max_disk_iops_read": 30000,
-        "max_disk_iops_write": 30000,
-        "max_disk_throughput_read_mbps": 1800,
-        "max_disk_throughput_write_mbps": 1800,
-        "network_bandwidth_gbps": 32,
-        "cpu_platform": "Intel Cascade Lake"
-      },
-      "n2-standard-32": {
-        "vcpu": 32,
-        "memory_gb": 128,
-        "memory_bandwidth_gbps": 160,
-        "max_disk_iops_read": 60000,
-        "max_disk_iops_write": 60000,
-        "max_disk_throughput_read_mbps": 2400,
-        "max_disk_throughput_write_mbps": 2400,
-        "network_bandwidth_gbps": 32,
-        "cpu_platform": "Intel Cascade Lake"
-      },
-      "n2-highmem-2": {
-        "vcpu": 2,
-        "memory_gb": 16,
-        "memory_bandwidth_gbps": 10,
-        "max_disk_iops_read": 15000,
-        "max_disk_iops_write": 15000,
-        "max_disk_throughput_read_mbps": 480,
-        "max_disk_throughput_write_mbps": 480,
-        "network_bandwidth_gbps": 10,
-        "cpu_platform": "Intel Cascade Lake"
-      },
-      "n2-highmem-4": {
-        "vcpu": 4,
-        "memory_gb": 32,
-        "memory_bandwidth_gbps": 20,
-        "max_disk_iops_read": 15000,
-        "max_disk_iops_write": 15000,
-        "max_disk_throughput_read_mbps": 800,
-        "max_disk_throughput_write_mbps": 800,
-        "network_bandwidth_gbps": 10,
-        "cpu_platform": "Intel Cascade Lake"
-      },
-      "n2-highcpu-2": {
-        "vcpu": 2,
-        "memory_gb": 2,
-        "memory_bandwidth_gbps": 5,
-        "max_disk_iops_read": 15000,
-        "max_disk_iops_write": 15000,
-        "max_disk_throughput_read_mbps": 480,
-        "max_disk_throughput_write_mbps": 480,
-        "network_bandwidth_gbps": 10,
-        "cpu_platform": "Intel Cascade Lake"
-      },
-      "n2-highcpu-4": {
-        "vcpu": 4,
-        "memory_gb": 4,
-        "memory_bandwidth_gbps": 10,
-        "max_disk_iops_read": 15000,
-        "max_disk_iops_write": 15000,
-        "max_disk_throughput_read_mbps": 800,
-        "max_disk_throughput_write_mbps": 800,
-        "network_bandwidth_gbps": 10,
-        "cpu_platform": "Intel Cascade Lake"
-      }
-    }
-  },
-  "N2D": {
-    "description": "AMD-based general-purpose VMs with great price-performance",
-    "machines": {
-      "n2d-standard-2": {
-        "vcpu": 2,
-        "memory_gb": 8,
-        "memory_bandwidth_gbps": 10,
-        "max_disk_iops_read": 15000,
-        "max_disk_iops_write": 15000,
-        "max_disk_throughput_read_mbps": 480,
-        "max_disk_throughput_write_mbps": 480,
-        "network_bandwidth_gbps": 10,
-        "cpu_platform": "AMD EPYC Rome"
-      },
-      "n2d-standard-4": {
-        "vcpu": 4,
-        "memory_gb": 16,
-        "memory_bandwidth_gbps": 20,
-        "max_disk_iops_read": 15000,
-        "max_disk_iops_write": 15000,
-        "max_disk_throughput_read_mbps": 800,
-        "max_disk_throughput_write_mbps": 800,
-        "network_bandwidth_gbps": 10,
-        "cpu_platform": "AMD EPYC Rome"
-      },
-      "n2d-standard-8": {
-        "vcpu": 8,
-        "memory_gb": 32,
-        "memory_bandwidth_gbps": 40,
-        "max_disk_iops_read": 15000,
-        "max_disk_iops_write": 15000,
-        "max_disk_throughput_read_mbps": 1200,
-        "max_disk_throughput_write_mbps": 1200,
-        "network_bandwidth_gbps": 16,
-        "cpu_platform": "AMD EPYC Rome"
-      },
-      "n2d-standard-16": {
-        "vcpu": 16,
-        "memory_gb": 64,
-        "memory_bandwidth_gbps": 80,
-        "max_disk_iops_read": 30000,
-        "max_disk_iops_write": 30000,
-        "max_disk_throughput_read_mbps": 1800,
-        "max_disk_throughput_write_mbps": 1800,
-        "network_bandwidth_gbps": 32,
-        "cpu_platform": "AMD EPYC Rome"
-      },
-      "n2d-highmem-2": {
-        "vcpu": 2,
-        "memory_gb": 16,
-        "memory_bandwidth_gbps": 10,
-        "max_disk_iops_read": 15000,
-        "max_disk_iops_write": 15000,
-        "max_disk_throughput_read_mbps": 480,
-        "max_disk_throughput_write_mbps": 480,
-        "network_bandwidth_gbps": 10,
-        "cpu_platform": "AMD EPYC Rome"
-      },
-      "n2d-highcpu-2": {
-        "vcpu": 2,
-        "memory_gb": 2,
-        "memory_bandwidth_gbps": 5,
-        "max_disk_iops_read": 15000,
-        "max_disk_iops_write": 15000,
-        "max_disk_throughput_read_mbps": 480,
-        "max_disk_throughput_write_mbps": 480,
-        "network_bandwidth_gbps": 10,
-        "cpu_platform": "AMD EPYC Rome"
-      }
-    }
-  },
-  "C2": {
-    "description": "Compute-optimized VMs for high-performance computing workloads",
-    "machines": {
-      "c2-standard-4": {
-        "vcpu": 4,
-        "memory_gb": 16,
-        "memory_bandwidth_gbps": 20,
-        "max_disk_iops_read": 15000,
-        "max_disk_iops_write": 15000,
-        "max_disk_throughput_read_mbps": 800,
-        "max_disk_throughput_write_mbps": 800,
-        "network_bandwidth_gbps": 10,
-        "cpu_platform": "Intel Cascade Lake (3.8GHz)"
-      },
-      "c2-standard-8": {
-        "vcpu": 8,
-        "memory_gb": 32,
-        "memory_bandwidth_gbps": 40,
-        "max_disk_iops_read": 15000,
-        "max_disk_iops_write": 15000,
-        "max_disk_throughput_read_mbps": 1200,
-        "max_disk_throughput_write_mbps": 1200,
-        "network_bandwidth_gbps": 16,
-        "cpu_platform": "Intel Cascade Lake (3.8GHz)"
-      },
-      "c2-standard-16": {
-        "vcpu": 16,
-        "memory_gb": 64,
-        "memory_bandwidth_gbps": 80,
-        "max_disk_iops_read": 30000,
-        "max_disk_iops_write": 30000,
-        "max_disk_throughput_read_mbps": 1800,
-        "max_disk_throughput_write_mbps": 1800,
-        "network_bandwidth_gbps": 32,
-        "cpu_platform": "Intel Cascade Lake (3.8GHz)"
-      },
-      "c2-standard-30": {
-        "vcpu": 30,
-        "memory_gb": 120,
-        "memory_bandwidth_gbps": 150,
-        "max_disk_iops_read": 60000,
-        "max_disk_iops_write": 60000,
-        "max_disk_throughput_read_mbps": 2400,
-        "max_disk_throughput_write_mbps": 2400,
-        "network_bandwidth_gbps": 32,
-        "cpu_platform": "Intel Cascade Lake (3.8GHz)"
-      },
-      "c2-standard-60": {
-        "vcpu": 60,
-        "memory_gb": 240,
-        "memory_bandwidth_gbps": 300,
-        "max_disk_iops_read": 100000,
-        "max_disk_iops_write": 100000,
-        "max_disk_throughput_read_mbps": 2650,
-        "max_disk_throughput_write_mbps": 2650,
-        "network_bandwidth_gbps": 32,
-        "cpu_platform": "Intel Cascade Lake (3.8GHz)"
-      }
-    }
-  },
-  "C2D": {
-    "description": "AMD-based compute-optimized VMs with high performance",
-    "machines": {
-      "c2d-standard-2": {
-        "vcpu": 2,
-        "memory_gb": 8,
-        "memory_bandwidth_gbps": 10,
-        "max_disk_iops_read": 15000,
-        "max_disk_iops_write": 15000,
-        "max_disk_throughput_read_mbps": 480,
-        "max_disk_throughput_write_mbps": 480,
-        "network_bandwidth_gbps": 10,
-        "cpu_platform": "AMD EPYC Milan (3.5GHz)"
-      },
-      "c2d-standard-4": {
-        "vcpu": 4,
-        "memory_gb": 16,
-        "memory_bandwidth_gbps": 20,
-        "max_disk_iops_read": 15000,
-        "max_disk_iops_write": 15000,
-        "max_disk_throughput_read_mbps": 800,
-        "max_disk_throughput_write_mbps": 800,
-        "network_bandwidth_gbps": 10,
-        "cpu_platform": "AMD EPYC Milan (3.5GHz)"
-      },
-      "c2d-standard-8": {
-        "vcpu": 8,
-        "memory_gb": 32,
-        "memory_bandwidth_gbps": 40,
-        "max_disk_iops_read": 15000,
-        "max_disk_iops_write": 15000,
-        "max_disk_throughput_read_mbps": 1200,
-        "max_disk_throughput_write_mbps": 1200,
-        "network_bandwidth_gbps": 16,
-        "cpu_platform": "AMD EPYC Milan (3.5GHz)"
-      },
-      "c2d-standard-16": {
-        "vcpu": 16,
-        "memory_gb": 64,
-        "memory_bandwidth_gbps": 80,
-        "max_disk_iops_read": 30000,
-        "max_disk_iops_write": 30000,
-        "max_disk_throughput_read_mbps": 1800,
-        "max_disk_throughput_write_mbps": 1800,
-        "network_bandwidth_gbps": 32,
-        "cpu_platform": "AMD EPYC Milan (3.5GHz)"
-      },
-      "c2d-highcpu-2": {
-        "vcpu": 2,
-        "memory_gb": 4,
-        "memory_bandwidth_gbps": 5,
-        "max_disk_iops_read": 15000,
-        "max_disk_iops_write": 15000,
-        "max_disk_throughput_read_mbps": 480,
-        "max_disk_throughput_write_mbps": 480,
-        "network_bandwidth_gbps": 10,
-        "cpu_platform": "AMD EPYC Milan (3.5GHz)"
-      }
-    }
-  },
-  "C3": {
-    "description": "Latest compute-optimized VMs with Intel Sapphire Rapids",
-    "machines": {
-      "c3-standard-4": {
-        "vcpu": 4,
-        "memory_gb": 16,
-        "memory_bandwidth_gbps": 23,
-        "max_disk_iops_read": 15000,
-        "max_disk_iops_write": 15000,
-        "max_disk_throughput_read_mbps": 800,
-        "max_disk_throughput_write_mbps": 800,
-        "network_bandwidth_gbps": 23,
-        "cpu_platform": "Intel Sapphire Rapids (4th Gen)"
-      },
-      "c3-standard-8": {
-        "vcpu": 8,
-        "memory_gb": 32,
-        "memory_bandwidth_gbps": 46,
-        "max_disk_iops_read": 15000,
-        "max_disk_iops_write": 15000,
-        "max_disk_throughput_read_mbps": 1200,
-        "max_disk_throughput_write_mbps": 1200,
-        "network_bandwidth_gbps": 46,
-        "cpu_platform": "Intel Sapphire Rapids (4th Gen)"
-      },
-      "c3-standard-22": {
-        "vcpu": 22,
-        "memory_gb": 88,
-        "memory_bandwidth_gbps": 100,
-        "max_disk_iops_read": 40000,
-        "max_disk_iops_write": 40000,
-        "max_disk_throughput_read_mbps": 2000,
-        "max_disk_throughput_write_mbps": 2000,
-        "network_bandwidth_gbps": 100,
-        "cpu_platform": "Intel Sapphire Rapids (4th Gen)"
-      },
-      "c3-highcpu-4": {
-        "vcpu": 4,
-        "memory_gb": 8,
-        "memory_bandwidth_gbps": 23,
-        "max_disk_iops_read": 15000,
-        "max_disk_iops_write": 15000,
-        "max_disk_throughput_read_mbps": 800,
-        "max_disk_throughput_write_mbps": 800,
-        "network_bandwidth_gbps": 23,
-        "cpu_platform": "Intel Sapphire Rapids (4th Gen)"
-      }
-    }
-  },
-  "M1": {
-    "description": "Memory-optimized VMs for memory-intensive workloads",
-    "machines": {
-      "m1-ultramem-40": {
-        "vcpu": 40,
-        "memory_gb": 961,
-        "memory_bandwidth_gbps": 200,
-        "max_disk_iops_read": 80000,
-        "max_disk_iops_write": 80000,
-        "max_disk_throughput_read_mbps": 2650,
-        "max_disk_throughput_write_mbps": 2650,
-        "network_bandwidth_gbps": 32,
-        "cpu_platform": "Intel Broadwell"
-      },
-      "m1-ultramem-80": {
-        "vcpu": 80,
-        "memory_gb": 1922,
-        "memory_bandwidth_gbps": 400,
-        "max_disk_iops_read": 160000,
-        "max_disk_iops_write": 160000,
-        "max_disk_throughput_read_mbps": 2650,
-        "max_disk_throughput_write_mbps": 2650,
-        "network_bandwidth_gbps": 32,
-        "cpu_platform": "Intel Broadwell"
-      },
-      "m1-megamem-96": {
-        "vcpu": 96,
-        "memory_gb": 1433,
-        "memory_bandwidth_gbps": 300,
-        "max_disk_iops_read": 160000,
-        "max_disk_iops_write": 160000,
-        "max_disk_throughput_read_mbps": 2650,
-        "max_disk_throughput_write_mbps": 2650,
-        "network_bandwidth_gbps": 32,
-        "cpu_platform": "Intel Broadwell"
-      }
-    }
-  },
-  "M2": {
-    "description": "Second-generation memory-optimized VMs with higher performance",
-    "machines": {
-      "m2-ultramem-208": {
-        "vcpu": 208,
-        "memory_gb": 5888,
-        "memory_bandwidth_gbps": 600,
-        "max_disk_iops_read": 200000,
-        "max_disk_iops_write": 200000,
-        "max_disk_throughput_read_mbps": 2650,
-        "max_disk_throughput_write_mbps": 2650,
-        "network_bandwidth_gbps": 32,
-        "cpu_platform": "Intel Cascade Lake"
-      },
-      "m2-ultramem-416": {
-        "vcpu": 416,
-        "memory_gb": 11776,
-        "memory_bandwidth_gbps": 1200,
-        "max_disk_iops_read": 400000,
-        "max_disk_iops_write": 400000,
-        "max_disk_throughput_read_mbps": 2650,
-        "max_disk_throughput_write_mbps": 2650,
-        "network_bandwidth_gbps": 50,
-        "cpu_platform": "Intel Cascade Lake"
-      },
-      "m2-megamem-416": {
-        "vcpu": 416,
-        "memory_gb": 5888,
-        "memory_bandwidth_gbps": 600,
-        "max_disk_iops_read": 400000,
-        "max_disk_iops_write": 400000,
-        "max_disk_throughput_read_mbps": 2650,
-        "max_disk_throughput_write_mbps": 2650,
-        "network_bandwidth_gbps": 32,
-        "cpu_platform": "Intel Cascade Lake"
-      }
-    }
-  },
-  "M3": {
-    "description": "Latest memory-optimized VMs with best memory-to-vCPU ratio",
-    "machines": {
-      "m3-ultramem-32": {
-        "vcpu": 32,
-        "memory_gb": 976,
-        "memory_bandwidth_gbps": 200,
-        "max_disk_iops_read": 60000,
-        "max_disk_iops_write": 60000,
-        "max_disk_throughput_read_mbps": 2400,
-        "max_disk_throughput_write_mbps": 2400,
-        "network_bandwidth_gbps": 32,
-        "cpu_platform": "Intel Ice Lake"
-      },
-      "m3-ultramem-64": {
-        "vcpu": 64,
-        "memory_gb": 1952,
-        "memory_bandwidth_gbps": 400,
-        "max_disk_iops_read": 100000,
-        "max_disk_iops_write": 100000,
-        "max_disk_throughput_read_mbps": 2650,
-        "max_disk_throughput_write_mbps": 2650,
-        "network_bandwidth_gbps": 32,
-        "cpu_platform": "Intel Ice Lake"
-      },
-      "m3-megamem-64": {
-        "vcpu": 64,
-        "memory_gb": 976,
-        "memory_bandwidth_gbps": 200,
-        "max_disk_iops_read": 100000,
-        "max_disk_iops_write": 100000,
-        "max_disk_throughput_read_mbps": 2650,
-        "max_disk_throughput_write_mbps": 2650,
-        "network_bandwidth_gbps": 32,
-        "cpu_platform": "Intel Ice Lake"
-      },
-      "m3-megamem-128": {
-        "vcpu": 128,
-        "memory_gb": 1952,
-        "memory_bandwidth_gbps": 400,
-        "max_disk_iops_read": 200000,
-        "max_disk_iops_write": 200000,
-        "max_disk_throughput_read_mbps": 2650,
-        "max_disk_throughput_write_mbps": 2650,
-        "network_bandwidth_gbps": 32,
-        "cpu_platform": "Intel Ice Lake"
+        "cpu_platform": "Intel or AMD EPYC",
+        "disk_limits": {
+          "pd-standard": {
+            "max_disk_iops_read": 7500,
+            "max_disk_iops_write": 15000,
+            "max_disk_throughput_read_mbps": 1200,
+            "max_disk_throughput_write_mbps": 400
+          },
+          "pd-balanced": {
+            "max_disk_iops_read": 20000,
+            "max_disk_iops_write": 20000,
+            "max_disk_throughput_read_mbps": 1200,
+            "max_disk_throughput_write_mbps": 1000
+          },
+          "pd-ssd": {
+            "max_disk_iops_read": 25000,
+            "max_disk_iops_write": 25000,
+            "max_disk_throughput_read_mbps": 1200,
+            "max_disk_throughput_write_mbps": 1000
+          }
+        }
       }
     }
   }
