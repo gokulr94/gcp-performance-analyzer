@@ -2,6 +2,9 @@
 let currentCalculation = null;
 let diskTypeConstraints = {}; // Store min/max for each disk type
 let currentOptimalSize = null; // Store current optimal disk size
+let disks = []; // Array of disk configurations {id, type, size}
+let diskIdCounter = 0; // Auto-increment ID for disks
+let availableDiskTypes = []; // Store loaded disk types
 
 // Initialize the application
 document.addEventListener('DOMContentLoaded', () => {
@@ -13,134 +16,146 @@ document.addEventListener('DOMContentLoaded', () => {
 // Setup event listeners
 function setupEventListeners() {
     const machineSelect = document.getElementById('machineSelect');
-    const diskTypeSelect = document.getElementById('diskTypeSelect');
-    const diskSizeInput = document.getElementById('diskSizeInput');
     const calculateBtn = document.getElementById('calculateBtn');
     const analyzeBtn = document.getElementById('analyzeBtn');
+    const addDiskBtn = document.getElementById('addDiskBtn');
 
-    // Validate inputs and update UI
-    const validateInputs = () => {
-        const diskType = diskTypeSelect.value;
-        const diskSize = parseInt(diskSizeInput.value) || 0;
-        const constraints = diskTypeConstraints[diskType];
-
-        let isValid = machineSelect.value && diskType && diskSize > 0;
-        let errorMessage = '';
-
-        let warningMessage = '';
-
-        if (constraints && diskSize > 0) {
-            if (diskSize < constraints.min) {
-                isValid = false;
-                errorMessage = `Minimum size for this disk type: ${constraints.min} GB`;
-            } else if (diskSize > constraints.max) {
-                isValid = false;
-                errorMessage = `Maximum size for this disk type: ${formatNumber(constraints.max)} GB`;
-            }
-        }
-
-        // Update validation UI
-        const validationDiv = document.getElementById('diskSizeValidation');
-        if (validationDiv) {
-            if (errorMessage) {
-                validationDiv.textContent = errorMessage;
-                validationDiv.className = 'validation-error';
-                diskSizeInput.classList.add('input-error');
-                diskSizeInput.classList.remove('input-warning');
-            } else if (warningMessage) {
-                validationDiv.textContent = warningMessage;
-                validationDiv.className = 'validation-warning';
-                diskSizeInput.classList.remove('input-error');
-                diskSizeInput.classList.add('input-warning');
-            } else {
-                validationDiv.textContent = '';
-                validationDiv.className = '';
-                diskSizeInput.classList.remove('input-error');
-                diskSizeInput.classList.remove('input-warning');
-            }
-        }
-
-        calculateBtn.disabled = !isValid;
-        return isValid;
-    };
-
-    // Update disk size constraints and fetch optimal size
-    const updateDiskConstraints = async () => {
-        const diskType = diskTypeSelect.value;
-        const machineType = machineSelect.value;
-        const constraints = diskTypeConstraints[diskType];
-
-        if (constraints) {
-            diskSizeInput.min = constraints.min;
-            diskSizeInput.max = constraints.max;
-
-            // Update hint text
-            const hint = document.getElementById('diskSizeHint');
-            if (hint) {
-                hint.textContent = `Enter disk size in GB (min: ${constraints.min}, max: ${formatNumber(constraints.max)})`;
-            }
-        }
-
-        // Fetch optimal disk size for this machine/disk combination
-        if (machineType && diskType) {
-            await updateOptimalDiskSize(machineType, diskType);
-        }
-
-        validateInputs();
-    };
-
-    // Update optimal disk size when machine type changes
-    const updateMachineSelection = async () => {
-        const diskType = diskTypeSelect.value;
-        const machineType = machineSelect.value;
-
-        if (machineType && diskType) {
-            await updateOptimalDiskSize(machineType, diskType);
-        }
-
-        validateInputs();
-    };
-
-    machineSelect.addEventListener('change', updateMachineSelection);
-    diskTypeSelect.addEventListener('change', updateDiskConstraints);
-    diskSizeInput.addEventListener('input', validateInputs);
-
+    machineSelect.addEventListener('change', validateInputs);
+    addDiskBtn.addEventListener('click', addDisk);
     calculateBtn.addEventListener('click', calculatePerformance);
     analyzeBtn.addEventListener('click', getAIAnalysis);
 }
 
-// Fetch and set optimal disk size for machine/disk combination
-async function updateOptimalDiskSize(machineType, diskType) {
-    try {
-        const response = await fetch('/api/optimal-disk-size', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                machine_type: machineType,
-                disk_type: diskType
-            })
-        });
+// Add a new disk to the configuration
+function addDisk() {
+    const diskId = diskIdCounter++;
+    const defaultType = availableDiskTypes.length > 0 ? availableDiskTypes[0].disk_type : 'pd-balanced';
+    const defaultSize = 100;
 
-        if (response.ok) {
-            const result = await response.json();
-            const diskSizeInput = document.getElementById('diskSizeInput');
-            diskSizeInput.value = result.optimal_size_gb;
+    const newDisk = {
+        id: diskId,
+        type: defaultType,
+        size: defaultSize
+    };
 
-            // Store optimal size for validation warnings
-            currentOptimalSize = result.optimal_size_gb;
+    disks.push(newDisk);
+    renderDisks();
+    validateInputs();
+}
 
-            // Update hint to show why this value
-            const hint = document.getElementById('diskSizeHint');
-            if (hint) {
-                const constraints = diskTypeConstraints[diskType];
-                hint.innerHTML = `Optimal: <strong>${formatNumber(result.optimal_size_gb)} GB</strong> for ${formatNumber(result.machine_max_iops)} IOPS (min: ${constraints.min}, max: ${formatNumber(constraints.max)})`;
+// Remove a disk from the configuration
+function removeDisk(diskId) {
+    disks = disks.filter(d => d.id !== diskId);
+    renderDisks();
+    validateInputs();
+}
+
+// Update disk type
+function updateDiskType(diskId, newType) {
+    const disk = disks.find(d => d.id === diskId);
+    if (disk) {
+        disk.type = newType;
+        // Update size constraints for this disk
+        renderDisks();
+        validateInputs();
+    }
+}
+
+// Update disk size
+function updateDiskSize(diskId, newSize) {
+    const disk = disks.find(d => d.id === diskId);
+    if (disk) {
+        disk.size = parseInt(newSize) || 0;
+        validateInputs();
+    }
+}
+
+// Render the disks list
+function renderDisks() {
+    const disksList = document.getElementById('disksList');
+    if (!disksList) return;
+
+    disksList.innerHTML = '';
+
+    disks.forEach((disk, index) => {
+        const diskDiv = document.createElement('div');
+        diskDiv.className = 'disk-item';
+        diskDiv.innerHTML = `
+            <div class="disk-header">
+                <span class="disk-label">Disk ${index + 1}</span>
+                ${disks.length > 1 ? `<button type="button" class="remove-disk-btn" onclick="removeDisk(${disk.id})">Remove</button>` : ''}
+            </div>
+            <div class="disk-inputs">
+                <div class="disk-input-group">
+                    <label>Type</label>
+                    <select class="disk-type-select" onchange="updateDiskType(${disk.id}, this.value)">
+                        ${availableDiskTypes.map(dt =>
+                            `<option value="${dt.disk_type}" ${dt.disk_type === disk.type ? 'selected' : ''}>${dt.name}</option>`
+                        ).join('')}
+                    </select>
+                </div>
+                <div class="disk-input-group">
+                    <label>Size (GB)</label>
+                    <input type="number"
+                           class="disk-size-input"
+                           value="${disk.size}"
+                           min="${diskTypeConstraints[disk.type]?.min || 10}"
+                           max="${diskTypeConstraints[disk.type]?.max || 65536}"
+                           oninput="updateDiskSize(${disk.id}, this.value)">
+                </div>
+            </div>
+            <div class="disk-validation" id="diskValidation${disk.id}"></div>
+        `;
+        disksList.appendChild(diskDiv);
+    });
+}
+
+// Validate all inputs
+function validateInputs() {
+    const machineSelect = document.getElementById('machineSelect');
+    const calculateBtn = document.getElementById('calculateBtn');
+
+    let isValid = true;
+
+    // Check machine selection
+    if (!machineSelect.value) {
+        isValid = false;
+    }
+
+    // Check that at least one disk is configured
+    if (disks.length === 0) {
+        isValid = false;
+    }
+
+    // Validate each disk
+    disks.forEach(disk => {
+        const constraints = diskTypeConstraints[disk.type];
+        const validationDiv = document.getElementById(`diskValidation${disk.id}`);
+
+        if (constraints) {
+            if (disk.size < constraints.min) {
+                isValid = false;
+                if (validationDiv) {
+                    validationDiv.textContent = `Minimum: ${constraints.min} GB`;
+                    validationDiv.className = 'disk-validation error';
+                }
+            } else if (disk.size > constraints.max) {
+                isValid = false;
+                if (validationDiv) {
+                    validationDiv.textContent = `Maximum: ${formatNumber(constraints.max)} GB`;
+                    validationDiv.className = 'disk-validation error';
+                }
+            } else {
+                if (validationDiv) {
+                    validationDiv.textContent = '';
+                    validationDiv.className = 'disk-validation';
+                }
             }
         }
-    } catch (error) {
-        console.error('Failed to fetch optimal disk size:', error);
-    }
+    });
+
+    calculateBtn.disabled = !isValid;
+    return isValid;
 }
 
 // Load all machines
@@ -211,9 +226,8 @@ async function loadDiskTypes() {
         const response = await fetch('/api/disk-types');
         const diskTypes = await response.json();
 
-        const diskTypeSelect = document.getElementById('diskTypeSelect');
-        const diskSizeInput = document.getElementById('diskSizeInput');
-        diskTypeSelect.innerHTML = '';
+        // Store disk types globally for disk rendering
+        availableDiskTypes = diskTypes;
 
         diskTypes.forEach(disk => {
             // Store constraints for validation
@@ -221,37 +235,11 @@ async function loadDiskTypes() {
                 min: disk.min_size_gb,
                 max: disk.max_size_gb
             };
-
-            const option = document.createElement('option');
-            option.value = disk.disk_type;
-            option.textContent = `${disk.name} (${disk.type})`;
-            option.title = disk.description;
-            // Select pd-balanced as default
-            if (disk.disk_type === 'pd-balanced') {
-                option.selected = true;
-            }
-            diskTypeSelect.appendChild(option);
         });
 
-        // Set initial constraints for default disk type
-        const defaultConstraints = diskTypeConstraints['pd-balanced'];
-        if (defaultConstraints) {
-            diskSizeInput.min = defaultConstraints.min;
-            diskSizeInput.max = defaultConstraints.max;
-        }
-
-        // Set optimal disk size for default machine/disk combination
-        const machineSelect = document.getElementById('machineSelect');
-        if (machineSelect.value) {
-            await updateOptimalDiskSize(machineSelect.value, 'pd-balanced');
-        } else {
-            // Wait for machines to load, then set optimal size
-            setTimeout(async () => {
-                const machineType = document.getElementById('machineSelect').value;
-                if (machineType) {
-                    await updateOptimalDiskSize(machineType, 'pd-balanced');
-                }
-            }, 100);
+        // Add first disk after disk types are loaded
+        if (disks.length === 0) {
+            addDisk();
         }
     } catch (error) {
         showError('Failed to load disk types');
@@ -262,8 +250,6 @@ async function loadDiskTypes() {
 // Calculate performance
 async function calculatePerformance() {
     const machineType = document.getElementById('machineSelect').value;
-    const diskType = document.getElementById('diskTypeSelect').value;
-    const diskSizeGb = parseInt(document.getElementById('diskSizeInput').value);
 
     showLoading(true);
     hideError();
@@ -277,8 +263,10 @@ async function calculatePerformance() {
             },
             body: JSON.stringify({
                 machine_type: machineType,
-                disk_type: diskType,
-                disk_size_gb: diskSizeGb
+                disks: disks.map(d => ({
+                    disk_type: d.type,
+                    disk_size_gb: d.size
+                }))
             })
         });
 
@@ -303,37 +291,41 @@ function displayResults(result) {
     // Show results section
     document.getElementById('resultsSection').style.display = 'block';
 
-    // Update config summary
-    document.getElementById('configSummary').textContent =
-        `${result.machine_type} + ${result.disk_type.toUpperCase()} ${result.disk_size_gb}GB`;
+    // Update config summary - show multi-disk configuration
+    let configText = `${result.machine_type} + ${result.num_disks} disk(s): `;
+    const diskSummaries = result.individual_disks.map(d =>
+        `${d.disk_type.toUpperCase()} ${d.disk_size_gb}GB`
+    );
+    configText += diskSummaries.join(', ');
+    document.getElementById('configSummary').textContent = configText;
 
     // Check for over-provisioning warnings
     const warningDiv = document.getElementById('overProvisionWarning');
     if (warningDiv) {
         const warnings = [];
 
-        // Check if disk IOPS exceeds machine limits
+        // Check if aggregate disk IOPS exceeds machine limits
         if (result.disk_performance.iops_read > result.machine_limits.iops_read) {
             const wasted = result.disk_performance.iops_read - result.machine_limits.iops_read;
-            warnings.push(`Read IOPS: Disk provides ${formatNumber(result.disk_performance.iops_read)} but machine caps at ${formatNumber(result.machine_limits.iops_read)} (${formatNumber(wasted)} wasted)`);
+            warnings.push(`Read IOPS: Disks provide ${formatNumber(result.disk_performance.iops_read)} but machine caps at ${formatNumber(result.machine_limits.iops_read)} (${formatNumber(wasted)} wasted)`);
         }
         if (result.disk_performance.iops_write > result.machine_limits.iops_write) {
             const wasted = result.disk_performance.iops_write - result.machine_limits.iops_write;
-            warnings.push(`Write IOPS: Disk provides ${formatNumber(result.disk_performance.iops_write)} but machine caps at ${formatNumber(result.machine_limits.iops_write)} (${formatNumber(wasted)} wasted)`);
+            warnings.push(`Write IOPS: Disks provide ${formatNumber(result.disk_performance.iops_write)} but machine caps at ${formatNumber(result.machine_limits.iops_write)} (${formatNumber(wasted)} wasted)`);
         }
 
         // Check throughput
         if (result.disk_performance.throughput_read_mbps > result.machine_limits.throughput_read_mbps) {
-            warnings.push(`Read Throughput: Disk provides ${formatNumber(result.disk_performance.throughput_read_mbps)} MB/s but machine caps at ${formatNumber(result.machine_limits.throughput_read_mbps)} MB/s`);
+            warnings.push(`Read Throughput: Disks provide ${formatNumber(result.disk_performance.throughput_read_mbps)} MB/s but machine caps at ${formatNumber(result.machine_limits.throughput_read_mbps)} MB/s`);
         }
         if (result.disk_performance.throughput_write_mbps > result.machine_limits.throughput_write_mbps) {
-            warnings.push(`Write Throughput: Disk provides ${formatNumber(result.disk_performance.throughput_write_mbps)} MB/s but machine caps at ${formatNumber(result.machine_limits.throughput_write_mbps)} MB/s`);
+            warnings.push(`Write Throughput: Disks provide ${formatNumber(result.disk_performance.throughput_write_mbps)} MB/s but machine caps at ${formatNumber(result.machine_limits.throughput_write_mbps)} MB/s`);
         }
 
         if (warnings.length > 0) {
             warningDiv.innerHTML = `
-                <div class="warning-title">⚠️ Over-provisioned Disk</div>
-                <div class="warning-text">Your disk performance exceeds machine limits. Consider a smaller disk size to save cost:</div>
+                <div class="warning-title">⚠️ Over-provisioned Disks</div>
+                <div class="warning-text">Your aggregate disk performance exceeds machine limits. Consider smaller disk sizes to save cost:</div>
                 <ul class="warning-list">${warnings.map(w => `<li>${w}</li>`).join('')}</ul>
             `;
             warningDiv.style.display = 'block';
@@ -606,74 +598,131 @@ function toggleFormula() {
     }
 }
 
-// Display calculation breakdown
+// Display calculation breakdown with simple table format
 function displayCalculationBreakdown(result) {
     const breakdown = document.getElementById('calculationBreakdown');
     const content = document.getElementById('breakdownContent');
 
-    const diskType = result.disk_type;
-    const diskSize = result.disk_size_gb;
-    const diskPerf = result.disk_performance;
-
     let html = '';
 
-    // Check disk type and show appropriate formula
-    if (diskType === 'local-ssd') {
-        const numDevices = Math.max(1, Math.floor(diskSize / 375));
-        html = `
-            <div class="breakdown-item">
-                <div class="breakdown-label">Local SSD Calculation</div>
-                <div class="breakdown-formula">Number of devices = ${diskSize} GB ÷ 375 GB = ${numDevices} device(s)</div>
-                <div class="breakdown-formula">Read IOPS = 375,000 × ${numDevices} = <span class="breakdown-result">${formatNumber(diskPerf.iops_read)}</span></div>
-                <div class="breakdown-formula">Write IOPS = 360,000 × ${numDevices} = <span class="breakdown-result">${formatNumber(diskPerf.iops_write)}</span></div>
-            </div>
-        `;
-    } else if (diskType.startsWith('hyperdisk')) {
-        html = `
-            <div class="breakdown-item">
-                <div class="breakdown-label">Hyperdisk (Provisioned Performance)</div>
-                <div class="breakdown-formula">IOPS range: ${formatNumber(diskPerf.iops_min || 0)} - ${formatNumber(diskPerf.iops_max || 0)}</div>
-                <div class="breakdown-formula">Throughput range: ${diskPerf.throughput_min_mbps} - ${diskPerf.throughput_max_mbps} MB/s</div>
-                <div class="breakdown-note">Configure provisioned values within these ranges</div>
-            </div>
-        `;
-    } else {
-        // Standard, Balanced, SSD, Extreme
+    // Display each disk's calculation
+    result.individual_disks.forEach((diskPerf, idx) => {
+        const diskType = diskPerf.disk_type;
+        const diskSize = diskPerf.disk_size_gb;
         const diskSpecs = getDiskSpecs(diskType);
-        if (diskSpecs) {
-            const hasBaseline = diskSpecs.iops_baseline_read > 0;
-            const baselineReadStr = hasBaseline ? `${formatNumber(diskSpecs.iops_baseline_read)} + ` : '';
-            const baselineWriteStr = hasBaseline ? `${formatNumber(diskSpecs.iops_baseline_write)} + ` : '';
-            const calcReadIops = diskSpecs.iops_baseline_read + diskSize * diskSpecs.iops_per_gb_read;
-            const calcWriteIops = diskSpecs.iops_baseline_write + diskSize * diskSpecs.iops_per_gb_write;
 
-            html = `
-                <div class="breakdown-item">
-                    <div class="breakdown-label">Read IOPS</div>
-                    <div class="breakdown-formula">min(${baselineReadStr}${diskSize} GB × ${diskSpecs.iops_per_gb_read} IOPS/GB, ${formatNumber(diskSpecs.iops_max_read)})</div>
-                    <div class="breakdown-formula">= min(${formatNumber(calcReadIops)}, ${formatNumber(diskSpecs.iops_max_read)}) = <span class="breakdown-result">${formatNumber(diskPerf.iops_read)}</span></div>
-                </div>
-                <div class="breakdown-item">
-                    <div class="breakdown-label">Write IOPS</div>
-                    <div class="breakdown-formula">min(${baselineWriteStr}${diskSize} GB × ${diskSpecs.iops_per_gb_write} IOPS/GB, ${formatNumber(diskSpecs.iops_max_write)})</div>
-                    <div class="breakdown-formula">= min(${formatNumber(calcWriteIops)}, ${formatNumber(diskSpecs.iops_max_write)}) = <span class="breakdown-result">${formatNumber(diskPerf.iops_write)}</span></div>
-                </div>
-                <div class="breakdown-item">
-                    <div class="breakdown-label">Read Throughput</div>
-                    <div class="breakdown-formula">min(${diskSize} GB × ${diskSpecs.throughput_per_gb_read} MB/s/GB, ${formatNumber(diskSpecs.throughput_max_read)})</div>
-                    <div class="breakdown-formula">= min(${formatNumber(diskSize * diskSpecs.throughput_per_gb_read)}, ${formatNumber(diskSpecs.throughput_max_read)}) = <span class="breakdown-result">${formatNumber(diskPerf.throughput_read_mbps)} MB/s</span></div>
-                </div>
-                <div class="breakdown-item">
-                    <div class="breakdown-label">Write Throughput</div>
-                    <div class="breakdown-formula">min(${diskSize} GB × ${diskSpecs.throughput_per_gb_write} MB/s/GB, ${formatNumber(diskSpecs.throughput_max_write)})</div>
-                    <div class="breakdown-formula">= min(${formatNumber(diskSize * diskSpecs.throughput_per_gb_write)}, ${formatNumber(diskSpecs.throughput_max_write)}) = <span class="breakdown-result">${formatNumber(diskPerf.throughput_write_mbps)} MB/s</span></div>
-                </div>
-            `;
+        // Disk header (only show number if multiple disks)
+        const diskLabel = result.num_disks > 1
+            ? `Disk ${idx + 1}: ${diskPerf.disk_name} - <span class="disk-size-highlight">${diskSize} GB</span>`
+            : `${diskPerf.disk_name} - <span class="disk-size-highlight">${diskSize} GB</span>`;
+
+        html += `<div class="calc-section">`;
+        html += `<div class="calc-section-header">${diskLabel}</div>`;
+
+        if (diskType === 'local-ssd') {
+            const numDevices = Math.max(1, Math.floor(diskSize / 375));
+            html += `
+            <table class="calc-table">
+                <tr><td>Devices</td><td>${diskSize} ÷ 375 = ${numDevices}</td></tr>
+                <tr><td>Read IOPS</td><td>375,000 × ${numDevices} = <strong>${formatNumber(diskPerf.iops_read)}</strong></td></tr>
+                <tr><td>Write IOPS</td><td>360,000 × ${numDevices} = <strong>${formatNumber(diskPerf.iops_write)}</strong></td></tr>
+            </table>`;
+        } else if (diskType.startsWith('hyperdisk')) {
+            html += `
+            <table class="calc-table">
+                <tr><td>IOPS Range</td><td>${formatNumber(diskPerf.iops_min || 0)} - ${formatNumber(diskPerf.iops_max || 0)}</td></tr>
+                <tr><td>Throughput</td><td>${diskPerf.throughput_min_mbps || 0} - ${diskPerf.throughput_max_mbps || 0} MB/s</td></tr>
+            </table>
+            <div class="calc-note">Hyperdisk uses provisioned performance</div>`;
+        } else if (diskSpecs) {
+            const hasBaseline = diskSpecs.iops_baseline_read > 0;
+
+            // Calculate values
+            const readIopsCalc = diskSpecs.iops_baseline_read + diskSize * diskSpecs.iops_per_gb_read;
+            const writeIopsCalc = diskSpecs.iops_baseline_write + diskSize * diskSpecs.iops_per_gb_write;
+            const readThroughputCalc = diskSize * diskSpecs.throughput_per_gb_read;
+            const writeThroughputCalc = diskSize * diskSpecs.throughput_per_gb_write;
+
+            html += `
+            <table class="calc-table">
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        <th>Formula</th>
+                        <th>Calculation</th>
+                        <th>Result</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Read IOPS</td>
+                        <td class="formula-col">${hasBaseline ? `baseline + (size × ${diskSpecs.iops_per_gb_read})` : `size × ${diskSpecs.iops_per_gb_read}`}</td>
+                        <td>${hasBaseline ? `${formatNumber(diskSpecs.iops_baseline_read)} + (${formatNumber(diskSize)} × ${diskSpecs.iops_per_gb_read})` : `${formatNumber(diskSize)} × ${diskSpecs.iops_per_gb_read}`} = ${formatNumber(readIopsCalc)}${readIopsCalc > diskSpecs.iops_max_read ? ` → max ${formatNumber(diskSpecs.iops_max_read)}` : ''}</td>
+                        <td><strong>${formatNumber(diskPerf.iops_read)}</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Write IOPS</td>
+                        <td class="formula-col">${hasBaseline ? `baseline + (size × ${diskSpecs.iops_per_gb_write})` : `size × ${diskSpecs.iops_per_gb_write}`}</td>
+                        <td>${hasBaseline ? `${formatNumber(diskSpecs.iops_baseline_write)} + (${formatNumber(diskSize)} × ${diskSpecs.iops_per_gb_write})` : `${formatNumber(diskSize)} × ${diskSpecs.iops_per_gb_write}`} = ${formatNumber(writeIopsCalc)}${writeIopsCalc > diskSpecs.iops_max_write ? ` → max ${formatNumber(diskSpecs.iops_max_write)}` : ''}</td>
+                        <td><strong>${formatNumber(diskPerf.iops_write)}</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Read MB/s</td>
+                        <td class="formula-col">size × ${diskSpecs.throughput_per_gb_read}</td>
+                        <td>${formatNumber(diskSize)} × ${diskSpecs.throughput_per_gb_read} = ${formatNumber(readThroughputCalc)}${readThroughputCalc > diskSpecs.throughput_max_read ? ` → max ${formatNumber(diskSpecs.throughput_max_read)}` : ''}</td>
+                        <td><strong>${formatNumber(diskPerf.throughput_read_mbps)}</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Write MB/s</td>
+                        <td class="formula-col">size × ${diskSpecs.throughput_per_gb_write}</td>
+                        <td>${formatNumber(diskSize)} × ${diskSpecs.throughput_per_gb_write} = ${formatNumber(writeThroughputCalc)}${writeThroughputCalc > diskSpecs.throughput_max_write ? ` → max ${formatNumber(diskSpecs.throughput_max_write)}` : ''}</td>
+                        <td><strong>${formatNumber(diskPerf.throughput_write_mbps)}</strong></td>
+                    </tr>
+                </tbody>
+            </table>`;
+
+            // Show disk type limits in a simple format
+            html += `
+            <div class="disk-limits-info">
+                <strong>Disk Type Limits:</strong>
+                ${hasBaseline ? `Baseline: ${formatNumber(diskSpecs.iops_baseline_read)} IOPS | ` : ''}
+                Max IOPS: ${formatNumber(diskSpecs.iops_max_read)} (R) / ${formatNumber(diskSpecs.iops_max_write)} (W) |
+                Max Throughput: ${formatNumber(diskSpecs.throughput_max_read)} (R) / ${formatNumber(diskSpecs.throughput_max_write)} (W) MB/s
+            </div>`;
         }
+
+        html += `</div>`;
+    });
+
+    // Add aggregate summary only if there are multiple disks
+    if (result.num_disks > 1) {
+        html += `
+            <div class="calc-aggregate">
+                <h5 class="calc-aggregate-title">Aggregate Performance (All Disks Combined)</h5>
+                <div class="calc-aggregate-grid">
+                    <div class="calc-aggregate-item">
+                        <span class="agg-label">Read IOPS:</span>
+                        <span class="agg-value">${formatNumber(result.disk_performance.iops_read)}</span>
+                    </div>
+                    <div class="calc-aggregate-item">
+                        <span class="agg-label">Write IOPS:</span>
+                        <span class="agg-value">${formatNumber(result.disk_performance.iops_write)}</span>
+                    </div>
+                    <div class="calc-aggregate-item">
+                        <span class="agg-label">Read Throughput:</span>
+                        <span class="agg-value">${formatNumber(result.disk_performance.throughput_read_mbps)} MB/s</span>
+                    </div>
+                    <div class="calc-aggregate-item">
+                        <span class="agg-label">Write Throughput:</span>
+                        <span class="agg-value">${formatNumber(result.disk_performance.throughput_write_mbps)} MB/s</span>
+                    </div>
+                </div>
+            </div>
+        `;
     }
 
     content.innerHTML = html;
-    breakdown.style.display = html ? 'block' : 'none';
+    breakdown.style.display = 'block';
 }
 
 // Get disk specifications for formula display

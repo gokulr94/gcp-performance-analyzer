@@ -17,28 +17,25 @@
         <main>
             <div class="calculator-section">
                 <h2>Configuration Input</h2>
-                <div class="input-grid">
-                    <div class="input-group">
-                        <label for="machineSelect">Machine Type</label>
-                        <select id="machineSelect" class="dropdown">
-                            <option value="">Loading machines...</option>
-                        </select>
-                        <p class="input-hint">Select customer's VM machine type</p>
-                    </div>
 
-                    <div class="input-group">
-                        <label for="diskTypeSelect">Disk Type</label>
-                        <select id="diskTypeSelect" class="dropdown">
-                            <option value="">Loading disk types...</option>
-                        </select>
-                        <p class="input-hint">Select persistent disk type attached to the VM</p>
-                    </div>
+                <!-- Machine Type Selection -->
+                <div class="input-group machine-selection">
+                    <label for="machineSelect">1. Select Machine Type</label>
+                    <select id="machineSelect" class="dropdown">
+                        <option value="">Loading machines...</option>
+                    </select>
+                    <p class="input-hint">Choose the GCP VM machine type</p>
+                </div>
 
-                    <div class="input-group">
-                        <label for="diskSizeInput">Disk Size (GB)</label>
-                        <input type="number" id="diskSizeInput" class="number-input" min="10" max="65000" value="100">
-                        <p class="input-hint" id="diskSizeHint">Enter disk size in GB (min: 10, max: 65,000)</p>
-                        <p class="validation-error" id="diskSizeValidation"></p>
+                <!-- Disk Configuration Section -->
+                <div class="disk-config-container">
+                    <div class="disk-config-header">
+                        <label>2. Configure Persistent Disks</label>
+                        <button type="button" id="addDiskBtn" class="add-disk-btn-inline">+ Add Another Disk</button>
+                    </div>
+                    <p class="input-hint disk-hint">Configure one or more persistent disks. Total performance = sum of all disks (up to machine limits)</p>
+                    <div id="disksList" class="disks-list">
+                        <!-- Disks will be added dynamically -->
                     </div>
                 </div>
 
@@ -119,20 +116,6 @@
                             <div id="breakdownContent" class="breakdown-content"></div>
                         </div>
 
-                        <!-- Formula Reference -->
-                        <div class="formula-content">
-                            <h4>Formula Reference</h4>
-                            <div class="formula-grid">
-                                <div class="formula-item">
-                                    <strong>Standard/Balanced/SSD:</strong>
-                                    <code>IOPS = min(baseline + size × IOPS/GB, max)</code>
-                                </div>
-                                <div class="formula-item">
-                                    <strong>Effective Performance:</strong>
-                                    <code>Effective = min(Machine_Limit, Disk_Perf)</code>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
 

@@ -97,6 +97,188 @@ header .use-case {
     margin-top: 5px;
 }
 
+/* Machine Selection */
+.machine-selection {
+    margin-bottom: 30px;
+    padding-bottom: 25px;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.machine-selection label {
+    font-size: 1.1em;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+/* Disk Configuration Container */
+.disk-config-container {
+    margin-bottom: 25px;
+}
+
+.disk-config-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.disk-config-header label {
+    font-size: 1.1em;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.disk-hint {
+    margin-bottom: 15px;
+    padding: 10px 15px;
+    background: #e8f0fe;
+    border-left: 3px solid var(--primary-color);
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+
+.add-disk-btn-inline {
+    padding: 8px 16px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.add-disk-btn-inline:hover {
+    background: #1a73e8;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(66, 133, 244, 0.3);
+}
+
+/* Disk List */
+.disks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.disk-item {
+    background: white;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    padding: 16px;
+    transition: all 0.2s;
+}
+
+.disk-item:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 2px 8px rgba(66, 133, 244, 0.1);
+}
+
+.disk-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.disk-label {
+    font-weight: 600;
+    color: var(--text-dark);
+    font-size: 1em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.disk-label::before {
+    content: "💾";
+    font-size: 1.2em;
+}
+
+.remove-disk-btn {
+    padding: 6px 14px;
+    background: white;
+    color: var(--danger-color);
+    border: 1px solid var(--danger-color);
+    border-radius: 6px;
+    font-size: 0.85em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.remove-disk-btn:hover {
+    background: var(--danger-color);
+    color: white;
+}
+
+.disk-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.disk-input-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.disk-input-group label {
+    font-size: 0.85em;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.disk-type-select,
+.disk-size-input {
+    padding: 10px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 0.95em;
+    background: white;
+    transition: all 0.2s;
+}
+
+.disk-type-select:focus,
+.disk-size-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
+}
+
+.disk-validation {
+    margin-top: 8px;
+    font-size: 0.85em;
+    min-height: 1.2em;
+}
+
+.disk-validation.error {
+    color: var(--danger-color);
+    font-weight: 500;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .disk-config-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .disk-inputs {
+        grid-template-columns: 1fr;
+    }
+}
+
 .validation-error {
     font-size: 0.85em;
     color: var(--danger-color);
@@ -947,4 +1129,134 @@ footer {
 
 .legend-item {
     color: var(--text-light);
+}
+
+/* Simple Calculation Details Styles */
+.calc-section {
+    margin-bottom: 20px;
+}
+
+.calc-section:last-child {
+    margin-bottom: 0;
+}
+
+.calc-section-header {
+    font-weight: 600;
+    font-size: 1em;
+    color: var(--text-dark);
+    padding: 10px 12px;
+    background: white;
+    border-left: 4px solid var(--primary-color);
+    margin-bottom: 10px;
+}
+
+.disk-size-highlight {
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+.calc-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9em;
+    background: white;
+    margin-bottom: 10px;
+}
+
+.calc-table th,
+.calc-table td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.calc-table th {
+    background: var(--bg-gray);
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.calc-table td:first-child {
+    font-weight: 500;
+    color: var(--text-dark);
+    width: 100px;
+}
+
+.calc-table td:last-child {
+    text-align: right;
+    width: 80px;
+}
+
+.calc-table .formula-col {
+    font-family: 'Roboto Mono', 'Courier New', monospace;
+    font-size: 0.85em;
+    color: var(--text-light);
+    background: #f9f9f9;
+}
+
+.calc-table tbody tr:hover {
+    background: #f5f5f5;
+}
+
+.disk-limits-info {
+    font-size: 0.85em;
+    color: var(--text-light);
+    padding: 8px 12px;
+    background: #f5f5f5;
+    border-radius: 4px;
+}
+
+.calc-note {
+    font-size: 0.85em;
+    color: var(--text-light);
+    font-style: italic;
+    padding: 8px 12px;
+}
+
+/* Aggregate Summary for Multi-disk */
+.calc-aggregate {
+    background: #e8f4fd;
+    border-radius: 6px;
+    padding: 15px;
+    margin-top: 15px;
+}
+
+.calc-aggregate-title {
+    font-size: 1em;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 12px;
+}
+
+.calc-aggregate-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+@media (max-width: 768px) {
+    .calc-aggregate-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.calc-aggregate-item {
+    background: white;
+    padding: 10px;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.agg-label {
+    display: block;
+    font-size: 0.8em;
+    color: var(--text-light);
+    margin-bottom: 4px;
+}
+
+.agg-value {
+    display: block;
+    font-size: 1.1em;
+    font-weight: 700;
+    color: var(--text-dark);
 }

@@ -331,56 +331,144 @@ def get_optimal_disk_size():
 
 @app.route('/api/calculate', methods=['POST'])
 def calculate():
-    """Calculate performance based on machine type, disk type, and disk size"""
+    """Calculate performance based on machine type and multiple disks"""
     data = request.get_json()
 
     machine_type = data.get('machine_type')
-    disk_type = data.get('disk_type')
-    disk_size_gb = data.get('disk_size_gb')
+    disks = data.get('disks', [])
 
-    if not all([machine_type, disk_type, disk_size_gb]):
-        return jsonify({'error': 'Missing required parameters'}), 400
+    if not machine_type:
+        return jsonify({'error': 'Missing machine_type'}), 400
 
-    try:
-        disk_size_gb = int(disk_size_gb)
-    except (ValueError, TypeError):
-        return jsonify({'error': 'Disk size must be a valid number'}), 400
+    if not disks or len(disks) == 0:
+        return jsonify({'error': 'At least one disk is required'}), 400
 
-    # Validate disk size is positive
-    if disk_size_gb <= 0:
-        return jsonify({'error': 'Disk size must be greater than 0'}), 400
+    # Validate and calculate performance for each disk
+    individual_disks = []
+    aggregate_performance = {
+        'iops_read': 0,
+        'iops_write': 0,
+        'throughput_read_mbps': 0,
+        'throughput_write_mbps': 0
+    }
 
-    # Validate disk type exists and get constraints
-    if disk_type not in disk_data:
-        return jsonify({'error': f'Unknown disk type: {disk_type}'}), 404
+    for idx, disk in enumerate(disks):
+        disk_type = disk.get('disk_type')
+        disk_size_gb = disk.get('disk_size_gb')
 
-    disk_spec = disk_data[disk_type]
-    min_size = disk_spec.get('min_size_gb', 10)
-    max_size = disk_spec.get('max_size_gb', 65536)
+        if not disk_type or not disk_size_gb:
+            return jsonify({'error': f'Disk {idx + 1}: Missing disk_type or disk_size_gb'}), 400
 
-    # Validate disk size against type-specific constraints
-    if disk_size_gb < min_size:
-        return jsonify({
-            'error': f'Disk size too small for {disk_spec["name"]}. Minimum: {min_size} GB'
-        }), 400
+        try:
+            disk_size_gb = int(disk_size_gb)
+        except (ValueError, TypeError):
+            return jsonify({'error': f'Disk {idx + 1}: Size must be a valid number'}), 400
 
-    if disk_size_gb > max_size:
-        return jsonify({
-            'error': f'Disk size too large for {disk_spec["name"]}. Maximum: {max_size:,} GB'
-        }), 400
+        # Validate disk size is positive
+        if disk_size_gb <= 0:
+            return jsonify({'error': f'Disk {idx + 1}: Size must be greater than 0'}), 400
 
-    # Find machine specs with disk-specific limits
-    machine_specs = find_machine_specs(machine_type, disk_type)
+        # Validate disk type exists and get constraints
+        if disk_type not in disk_data:
+            return jsonify({'error': f'Disk {idx + 1}: Unknown disk type: {disk_type}'}), 404
+
+        disk_spec = disk_data[disk_type]
+        min_size = disk_spec.get('min_size_gb', 10)
+        max_size = disk_spec.get('max_size_gb', 65536)
+
+        # Validate disk size against type-specific constraints
+        if disk_size_gb < min_size:
+            return jsonify({
+                'error': f'Disk {idx + 1}: Size too small for {disk_spec["name"]}. Minimum: {min_size} GB'
+            }), 400
+
+        if disk_size_gb > max_size:
+            return jsonify({
+                'error': f'Disk {idx + 1}: Size too large for {disk_spec["name"]}. Maximum: {max_size:,} GB'
+            }), 400
+
+        # Calculate disk performance
+        disk_performance = calculate_disk_performance(disk_type, disk_size_gb)
+        if not disk_performance:
+            return jsonify({'error': f'Disk {idx + 1}: Failed to calculate performance'}), 500
+
+        individual_disks.append(disk_performance)
+
+        # Aggregate performance (sum across all disks)
+        if 'iops_read' in disk_performance:
+            aggregate_performance['iops_read'] += disk_performance['iops_read']
+            aggregate_performance['iops_write'] += disk_performance['iops_write']
+            aggregate_performance['throughput_read_mbps'] += disk_performance['throughput_read_mbps']
+            aggregate_performance['throughput_write_mbps'] += disk_performance['throughput_write_mbps']
+
+    # Get machine specs (use first disk type for disk-specific limits)
+    first_disk_type = disks[0].get('disk_type')
+    machine_specs = find_machine_specs(machine_type, first_disk_type)
     if not machine_specs:
         return jsonify({'error': f'Unknown machine type: {machine_type}'}), 404
 
-    # Calculate disk performance
-    disk_performance = calculate_disk_performance(disk_type, disk_size_gb)
-    if not disk_performance:
-        return jsonify({'error': 'Failed to calculate disk performance'}), 500
+    # Calculate effective performance comparing aggregate to machine limits
+    network_throughput_mbps = machine_specs['network_bandwidth_gbps'] * 125
 
-    # Calculate effective performance
-    result = calculate_effective_performance(machine_specs, disk_performance)
+    effective_iops_read = min(machine_specs['max_disk_iops_read'], aggregate_performance['iops_read'])
+    effective_iops_write = min(machine_specs['max_disk_iops_write'], aggregate_performance['iops_write'])
+    effective_throughput_read = min(
+        machine_specs['max_disk_throughput_read_mbps'],
+        aggregate_performance['throughput_read_mbps'],
+        network_throughput_mbps
+    )
+    effective_throughput_write = min(
+        machine_specs['max_disk_throughput_write_mbps'],
+        aggregate_performance['throughput_write_mbps'],
+        network_throughput_mbps
+    )
+
+    # Determine bottleneck
+    bottlenecks = []
+    if effective_iops_read < machine_specs['max_disk_iops_read']:
+        bottlenecks.append('disk IOPS (read)')
+    if effective_iops_write < machine_specs['max_disk_iops_write']:
+        bottlenecks.append('disk IOPS (write)')
+    if effective_throughput_read < machine_specs['max_disk_throughput_read_mbps']:
+        if aggregate_performance['throughput_read_mbps'] <= network_throughput_mbps:
+            bottlenecks.append('disk throughput (read)')
+        else:
+            bottlenecks.append('network bandwidth (read)')
+    if effective_throughput_write < machine_specs['max_disk_throughput_write_mbps']:
+        if aggregate_performance['throughput_write_mbps'] <= network_throughput_mbps:
+            bottlenecks.append('disk throughput (write)')
+        else:
+            bottlenecks.append('network bandwidth (write)')
+
+    if bottlenecks:
+        bottleneck = 'Bottleneck: ' + ', '.join(bottlenecks)
+    else:
+        bottleneck = 'Machine type is the limiting factor'
+
+    result = {
+        'machine_type': machine_specs['machine_type'],
+        'family': machine_specs['family'],
+        'num_disks': len(individual_disks),
+        'individual_disks': individual_disks,
+        'machine_limits': {
+            'iops_read': machine_specs['max_disk_iops_read'],
+            'iops_write': machine_specs['max_disk_iops_write'],
+            'throughput_read_mbps': machine_specs['max_disk_throughput_read_mbps'],
+            'throughput_write_mbps': machine_specs['max_disk_throughput_write_mbps'],
+            'network_bandwidth_gbps': machine_specs['network_bandwidth_gbps'],
+            'network_throughput_mbps': network_throughput_mbps,
+            'vcpu': machine_specs['vcpu'],
+            'memory_gb': machine_specs['memory_gb']
+        },
+        'disk_performance': aggregate_performance,
+        'effective_performance': {
+            'iops_read': effective_iops_read,
+            'iops_write': effective_iops_write,
+            'throughput_read_mbps': effective_throughput_read,
+            'throughput_write_mbps': effective_throughput_write
+        },
+        'bottleneck': bottleneck
+    }
 
     return jsonify(result)
 
